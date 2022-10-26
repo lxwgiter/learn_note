@@ -1,0 +1,406 @@
+1、js代码每行语句可以不加分号，有些特殊情况需要加分号
+                     在下面2种情况下不加分号会有问题：
+                        ① 小括号开头的前一条语句(立即执行函数)
+                        ② 中方括号开头的前一条语句(匿名数组)
+                        解决办法: 在行首加分号
+2、stiring使用双引号或单引号都可以，但是不要混着用
+3、typeof关键字     可以判断: undefined/ 数值 / 字符串 / 布尔值 / function
+                   不能判断: null、object与array---->都返回object
+4、函数对象作为对象的属性出现时，不仅叫做方法，其实也是属性可能的调用方法有：①：p.setAge(23)    ②：p['setAge'](23)
+6、函数名.call/apply(对象名): 临时让函数成为某个对象的方法进行调用，这也是体现js的动态性的一方面。
+        call和apply是函数的方法且是每个函数都有的方法
+7、IIFE:
+        全称: Immediately-Invoked Function Expression(立即执行函数)jQuary常用的模块
+        作用：
+        * 隐藏实现
+        * 不会污染外部(全局)命名空间
+        * 用它来编码js模块
+        示例：
+        (function () {
+        var a = 1           //内部变量执行完销毁包括a，test，不会污染全局作用域
+        function test () {
+        console.log(++a)//(这里的++a返回的是常量2，不用担心都需调用变量a不存在的情况)-->通过闭包问题的引入，这种理解是错的
+        }                //这实际上是闭包，test产生闭包保存了外部变量的引用，IIFE执行完毕后，变量a并没有被销毁
+                        //而是保存在test闭包中。
+        window.$ = function () { // 向外暴露一个全局函数
+        return {
+            test: test
+        }
+        }
+    })();
+
+    $().test();//结果为2 
+
+8、JS中Function和function的区别：
+        Function是一个类(构造函数名)，是JS的内建对象，function则是关键字，用于声明一个函数
+          实例化函数对象有三种方法：
+                ①var fun=function(){}
+                ②function fun(){}
+                ③var fun=new Function(){}
+
+9、 函数的prototype属性(图见原型**.png)
+     ①原型对象概念：
+        * 每个函数都有一个prototype属性, 它默认指向一个Object空对象(即称为: 原型对象)-->普通对象new object()中没有原型对象
+        * 原型对象中有一个属性constructor, 它指向函数对象
+        * 默认的原型对象是空对象，没有添加方法，JS内建对象Date、Math等原型对象中有方法是因为在源码中添加过
+    ②显式原型和隐式原型：
+        1. 每个函数function都有一个prototype，即显式原型(属性)
+        2. 每个实例对象都有一个__proto__，可称为隐式原型(属性)--->普通实例对象中就没有prototype属性了
+        3. 对象的隐式原型的值为其对应构造函数的显式原型的值(地址值传递，详见图)
+                注：console.log(类名.prototype===对象名.__proto__)结果为true
+        4. 结合1和2，所有函数都是Function的实例(包含Function)，也就是说函数不仅是函数，同时
+             还是实例对象，那么函数就不仅有prototype属性(默认空Object对象)，还有__proto__属性(指向Function的显式原型对象)
+
+        * 函数的prototype属性: 在定义函数时自动添加的, 默认值是一个空Object对象
+                注：定义函数时自动执行语句： this.prototype = {};
+        * 对象的__proto__属性: 创建对象时自动添加的, 默认值为构造函数的prototype属性值
+                注：实例对象时自动执行语句 this.__proto__ = 类名.prototype;
+        * 程序员能直接操作显式原型, 但不能直接操作隐式原型(ES6之前)
+    ③原型链：(见原型链两张图)
+        1、别名: 隐式原型链---->因为实际情况大多是对象调用方法，从对象的__proto__属性沿着隐式原型一路向上找
+        2、访问一个对象的属性时：
+                * 先在自身属性中查找，找到返回
+                * 如果没有, 再沿着__proto__这条链向上查找, 找到返回
+                * 如果最终没找到, 返回undefined
+        3. 函数的显示原型指向的对象默认是空Object实例对象(但Object不满足)
+                * console.log(Object.prototype instanceof Object) // false
+        4. 所有函数都是Function的实例(包含Function)
+        5. Object的原型对象是原型链尽头
+                *Object.prototype.__proto__===null
+        6、Function函数对象的prototype和__proto__属性指向同一个原型对象
+                说明Function的源码实现为：Function =new Function(){}
+                且该原型对象是Object的实例，__proto__属性指向Object的原型对象
+        
+        ④原型继承：
+                构造函数的实例对象自动拥有构造函数原型对象的属性(方法)，利用的就是原型链
+                
+10、JS中的instanceof
+        1. instanceof是如何判断的?
+        * 表达式: A instanceof B
+        * 如果B函数的显式原型对象在A对象的原型链上, 返回true, 否则返回false
+
+        2、示例：---->详见原型链2.png
+                console.log(Object instanceof Function) // true
+                console.log(Object instanceof Object) // true
+                console.log(Function instanceof Function) // true
+                console.log(Function instanceof Object) // true
+
+                function Foo() {}
+                console.log(Object instanceof  Foo) // false
+
+
+11、关于原型链的面试题
+        ①  function A () {
+                };
+                A.prototype.n = 1;
+                var b = new A();
+                A.prototype = {
+                n: 2,
+                m: 3
+                };
+                var c = new A();
+                console.log(b.n, b.m, c.n, c.m);//1  undefined  2  3
+
+        ②  function F (){};--->参照图原型链2
+                Object.prototype.a = function(){
+                console.log('a()');
+                };
+                Function.prototype.b = function(){
+                console.log('b()');
+                };
+                
+                var f = new F();
+                f.a();  // a()
+                f.b();  // b is not a function 
+                F.a();  // a()
+                F.b();  // b()
+
+12、变量提升和函数提升
+        又叫变量的提前声明和函数的提前声明
+        1. 变量声明提升
+                * 通过var定义(声明)的变量, 在定义语句之前就可以访问到
+                * 值: undefined
+        2. 函数声明提升
+                * 通过function声明的函数, 在之前就可以直接调用
+                * 值: 函数定义(对象)
+
+        3.面试题 : 输出 undefined：------>JS中声明且未赋值的变量值为undefined
+                var a = 3
+                function fn () {
+                console.log(a)
+                var a = 4
+                }
+        4.注意点：
+                ①  function fn2() {//满足函数提升，定义语句前可用
+                        console.log('fn2()')
+                        }
+                
+                ②  var fn3 = function () {//满足变量提升，定义语句前不可用
+                        console.log('fn3()')
+                        }
+
+
+13、执行那个上下文：     -----》  解释了变量提升和函数提升
+        JS代码并不是一行一行执行的，执行上下文解释了部分JS代码的执行过程
+        1. 全局执行上下文
+                * 在执行全局代码前将window确定为全局执行上下文
+                * 对全局数据进行预处理
+                * var定义的全局变量==>undefined, 添加为window的属性
+                * function声明的全局函数==>赋值(fun), 添加为window的方法
+                * this==>赋值(window)
+                * 开始执行全局代码
+        2. 函数执行上下文       -----》执行上下文对象并不是真的对象，而是函数执行时栈中开辟的一片内存，每次执行完就销毁
+                * 在调用函数, 准备执行函数体之前, 创建对应的函数执行上下文对象(虚拟的, 存在于栈中)
+                * 对局部数据进行预处理
+                * 形参变量==>赋值(实参)==>添加为执行上下文的属性
+                * arguments==>赋值(实参列表), 添加为执行上下文的属性
+                * var定义的局部变量==>undefined, 添加为执行上下文的属性
+                * function声明的函数 ==>赋值(fun), 添加为执行上下文的方法
+                * this==>赋值(调用函数的对象)
+                * 开始执行函数体代码
+        
+        示例：
+                fun1();
+                function fun1() {
+                        console.log(this)
+                        function fun2() {
+                        console.log(this);
+                        }
+                        fun2(); //this是谁? window      ---------->理解为this.fun2()是错的，window中并没有fun2这个方法
+                        }                               ---------->应理解为fun2.call(window)
+                打印结果：window、window
+                解释：根据全局执行上下文，fun1被添加为window的方法，调用者也是window，故第一个输出语句输出window
+                        根据函数执行上下文，fun2被添加为栈中的方法，由于调用者是window，故输出window
+
+14、执行上下文栈：
+                1. 在全局代码执行前, JS引擎就会创建一个栈来存储管理所有的执行上下文对象
+                2. 在全局执行上下文(window)确定后, 将其添加到栈中(压栈)----window的引用
+                3. 当调用函数时，创建其执行上下文, 将其添加到栈中(压栈)
+                4. 在当前函数执行完后,将栈顶的对象移除(出栈)
+                5. 当所有的代码执行完后, 栈中只剩下window
+        说明：
+                其实就是代码执行时栈空间的表现
+
+
+15、函数提升和变量提升间的冲突：
+        总结： 函数提升优先级高于变量提升，且不会被同名变量声明时覆盖，但是会被变量赋值后覆盖
+
+        测试题1: 
+                function a() {}
+                var a
+                console.log(typeof a) // 'function'
+                结论：同名变量没有报错，函数提升优于同名的变量提升，且不会被覆盖
+                      结果而言相当于var a语句被覆盖从而无效
+        测试题2：
+                var a=1
+                function a() {}
+                console.log(typeof a) // 'Number'
+                或者是
+                function a() {}
+                var a=1                
+                console.log(typeof a) // 'Number' 
+                结论：变量赋值后覆盖同名函数，原理如下：
+                        JS引擎先会进行声明提前，且函数提升覆盖了变量提升，但是真正执行时才会执行
+                        变量赋值语句，a=1，把a从函数对象变成了Number    
+
+
+16、JS和Java作用域的不同：
+        ①在JS中小括号不算块作用域的一部分，而是全局作用域，比如说闭包问题的引入：
+           for (var i = 0; i < btns.length; i++){
+                var btn = btns[i]
+                btn.onclick = function () {
+                alert('第'+(i+1)+'个')
+                }
+        }
+        console.log(window.i)---->可以打印，i是全局作用域
+                也正因如此，程序执行时会出现执行时间不一致问题，输出语句永远是bths.length+1  
+
+        ②在Java中，小括号算局部作用域
+                for(int i=0;i<5;i++){}
+                System.out.println(i);
+                会报错
+
+17、执行时间不一致的解决方法：          ----->本质上要解决这个问题就是想办法把"i"变成常数
+        出现原因见16、①
+        解决方法一：
+          for (var i = 0; i < btns.length; i++) {
+                var btn = btns[i]
+                //将btn所对应的下标保存在btn上
+                btn.index = i
+                btn.onclick = function () {
+                alert('第'+(this.index+1)+'个')
+                }
+             }
+        解决方法二：                    ---->曲线救国，不直接调用，而是利用闭包调用
+          //利用闭包
+           for (var i = 0,length=btns.length; i < length; i++) {
+                (function (j) {
+                var btn = btns[j]
+                btn.onclick = function () {
+                        alert('第'+(j+1)+'个')
+                }
+                })(i)
+            }
+
+18、闭包：
+        1. 如何产生闭包?
+                * 当一个嵌套的内部函数引用了嵌套的外部函数的变量(函数)时, 就产生了闭包
+        2. 闭包到底是什么?
+                * 使用chrome调试查看
+                * 理解一: 闭包是嵌套的内部函数(绝大部分人)
+                * 理解二: 包含被引用变量(函数)的对象(极少数人)
+                * 注意: 闭包存在于嵌套的内部函数中
+        3. 产生闭包的条件?
+                * 函数嵌套
+                * 内部函数引用了外部函数的数据(变量/函数)
+
+        示例：
+        ①  function fn1 () {
+                var a = 2
+                function fn2 () { //执行函数定义就会产生闭包(不用调用内部函数)，也就是说函数的提前声明时
+                console.log(a)
+                }
+                // fn2()------>这一步可以没有
+            }
+            fn1()----->这一步必须要有
+
+        ②  function fun1() {
+                var a = 3
+                var fun2 = function () {****在这一行打断点，闭包的是匿名函数而不是fun2
+                console.log(a)
+                }
+            }
+            fun1()
+        4.闭包保存了引用的外部变量的引用，且保证了被引用的外部变量不会随着执行上下文栈的销毁而销毁
+          外部函数内的多个内部函数如果同时引用一个外部变量的话，那么他们引用的是同一个，
+          多次执行外部函数的话，会产生多个闭包
+
+
+19、JS模块：
+        实际上是闭包的实际应用
+                定义JS模块
+                * 具有特定功能的js文件
+                * 将所有的数据和功能都封装在一个函数内部(私有的)
+                * 只向外暴露一个包信n个方法的对象或函数
+                * 模块的使用者, 只需要通过模块暴露的对象调用方法来实现对应的功能
+        作用：实现了JS代码的封装，类似于其他语言的"private"关键字
+
+
+20、综合面试题：
+        //代码片段一
+                var name = "The Window";
+                var object = {
+                name : "My Object",
+                getNameFunc : function(){
+                return function(){
+                        return this.name;
+                     };
+                  }
+                };
+                alert(object.getNameFunc()());  //  the window
+
+        解释：object.getNameFunc()执行时，this的确是object，但是返回值是函数对象，this待定
+                object.getNameFunc()()这个写法意味着，函数的调用者其实是window
+
+
+          //代码片段二
+                var name2 = "The Window";
+                var object2 = {
+                name2 : "My Object",
+                getNameFunc : function(){
+                var that = this;
+                return function(){
+                        return that.name2;
+                    };
+                   }
+                };
+                alert(object2.getNameFunc()()); //  my object
+        解释：object2.getNameFunc()执行时把匿名function的taht赋值为object2(this)
+
+21、JS继承的实现：
+        其实是原型链继承:       ---->见图原型链继承.png
+         1.套路:
+                1. 定义父类型构造函数
+                2. 给父类型的原型添加方法
+                3. 定义子类型的构造函数
+                4. 创建父类型的对象赋值给子类型的原型----->Sub.prototype = new Supper()
+                5. 将子类型原型的构造属性设置为子类型----->Sub.prototype.constructor = Sub
+                6. 给子类型原型添加方法
+                7. 创建子类型的对象: 可以调用父类型的方法
+         2. 关键
+                1. 子类型的原型为父类型的一个实例对象
+         3. 解释
+               ①创建父类型的对象赋值给子类型的原型
+                        见图原型链继承.png，子类拥有父类的所有方法，同时也不影响子类进行方法的拓展
+               ②将子类型原型的构造属性设置为子类型
+                        不设置Sub.prototype.constructor = Sub这句话的情况下
+                        执行console.log(Sub.constructor)输出Sup，这是根据原型链，一路找到
+                        Sup的显式原型然后输出的结果，为了保持一致性，需要设置这句话  
+
+22、进程和线程：
+                1. 进程：程序的一次执行, 它占有一片独有的内存空间
+                2. 线程： CPU的基本调度单位, 是程序执行的一个完整流程
+                3. 进程与线程
+                        * 一个进程中一般至少有一个运行的线程: 主线程
+                        * 一个进程中也可以同时运行多个线程, 我们会说程序是多线程运行的
+                        * 一个进程内的数据可以供其中的多个线程直接共享
+                        * 多个进程之间的数据是不能直接共享的
+                4. 浏览器运行是单进程还是多进程?
+                        * 有的是单进程
+                        * firefox
+                        * 老版IE
+                        * 有的是多进程
+                        * chrome
+                        * 新版IE
+                5. 如何查看浏览器是否是多进程运行的呢?
+                        * 任务管理器==>进程
+                6. 浏览器运行是单线程还是多线程?
+                        * 都是多线程运行的  
+                7. 何为多进程与多线程?
+                  多进程运行: 一应用程序可以同时启动多个实例运行
+                  多线程: 在一个进程内, 同时有多个线程运行
+                8.比较单线程与多线程?
+                    多线程：
+                       优点： 
+                           能有效提升CPU的利用率
+                        缺点：
+                           创建多线程开销、线程间切换开销、死锁与状态同步问题
+                   单线程：
+                        优点：
+                             顺序编程简单易懂
+                        缺点：
+                            效率低    
+                9、JS是单线程还是多线程?
+                    js是单线程运行的，但使用H5中的 Web Workers可以多线程运行
+
+23、JS的多线程实现：
+        引入：当JS引擎执行复杂运算时，无暇顾及其他，会造成页面冻结
+        1. H5规范提供了js分线程的实现, 取名为: Web Workers
+        2. 相关API
+        * Worker: 构造函数, 加载分线程执行的js文件
+        * Worker.prototype.onmessage: 用于接收另一个线程的回调函数
+        * Worker.prototype.postMessage: 向另一个线程发送消息
+        3. 不足-----------》所以几乎很少用
+        * worker内代码不能操作DOM(更新UI)
+        * 不能跨域加载JS
+        * 不是每个浏览器都支持这个新特性
+
+        示例代码：见Web Workers_测试2和worker.js         
+
+
+
+
+
+ 关于JS面向对象的思考：
+      ①有了原型函数：
+        1、    解释清了类和实例间的关系-->在JS中映射为构造函数和实例对象，通过给构造函数的原型对象添加方法和属性
+        既可以达到"static"的效果，也可以通过让实例对象拿到显示原型对象的引用，避免了方法的重复定义。JS通过
+        设计构造函数和它的原型对象，从结果而言达到了和java相同的"类"的效果。
+        2、     推测通过原型对象的地址值传递实现了继承，通过调用方法和属性要通过原型链实现了重写
+
+      ②有了闭包：
+        1、通过模块，实现了封装类的效果
+
+       ③JS继承的实现：
+                原型链继承
+        

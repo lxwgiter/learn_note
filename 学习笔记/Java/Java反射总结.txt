@@ -1,0 +1,157 @@
+1、反射概述：
+    Reflection（反射）是被视为动态语言的关键，反射机制允许程序在执行期，借助于Reflection API取得任何类的内部信息，并能直接操作任意对象的内
+    部属性及方法。
+    加载完类之后，在堆内存的方法区中就产生了一个Class类型的对象（一个类只有一个Class对象），这个对象就包含了完整的类的结构信息。我们可
+    以通过这个对象看到类的结构。这个对象就像一面镜子，透过这个镜子看到类的结构，所以，我们形象的称之为反射。
+2、反射的作用：
+    在运行时判断任意一个对象所属的类
+    在运行时构造任意一个类的对象
+    在运行时判断任意一个类所具有的成员变量和方法
+    在运行时获取泛型信息
+    在运行时调用任意一个对象的成员变量和方法
+    在运行时处理注解
+    生成动态代理
+3、Class类：
+    Class类，此类是Java反射的源头，想完成反射操作，就必须先认识Class类。
+    Java虚拟机在加载.class文件时会产生一个Class类的对象代表该.class文件，从Class对象中可以获得.class文件内容。即获得类的信息。
+    对Class类的认识：
+         Class本身也是一个类
+         Class 对象只能由系统建立对象
+         一个加载的类在 JVM 中只会有一个Class实例
+         一个Class对象对应的是一个加载到JVM中的一个.class文件
+         每个类的实例都会记得自己是由哪个 Class 实例所生成
+         通过Class可以完整地得到一个类中的所有被加载的结构
+         Class类是Reflection的根源，针对任何你想动态加载、运行的类，唯有先获得相应的Class对象
+   Class类常用方法：
+          方法声明                                 功能描述
+        forName(String className)               获取与给定字符串名称的类或接口相关联的Class对象
+        getConstructors()                       获取类中所有public修饰的构造方法对象
+        getDeclaredFields()                     获取所有成员变量对应的字段类对象，包括public、 protected、default和private修饰的字段,但不包括从父类继承的字段
+        getFields()                             获取所有public修饰的成员变量对应的字段类对象，包括从父类继承的字段
+        getMethods()                            获取所有public修饰的成员方法对应的方法类对象，包括从父类继承的方法
+        getMethod( String name,Class... parameter Type)       根据方法名和参数类型获得对应的方法类对象,并且只能获得public 修饰的方法类对象
+        getInterfaces( )                        获取当前类实现的全部接口
+        getClass()                              获取调用该方法的Class对象
+        getName()                               获取类的完整名称，名称中包含包的名称
+        getPackage()                            获取类所属的包名称
+        getSuperclass( )                        获取类的父类
+        newInstance( )                          创建Class对象关联类的对象
+        getComponentType()                      获取数组的对应Class对象
+        isArray()                               判断此Class对象是否是一个数组
+   Class对象的获取：
+   因为Class类本身并没有定义任何构造方法,所以Class类不能直接使用构造方法进行对象的实例化，使用Class类进行对象的实例化可以使用以下3种方式:
+        根据全限定类名获取: Class.forName("全限定类名")。
+        根据对象获取:对象名.getClass()。
+        根据类名获取:类名.class。
+
+   哪些类型可以有Class对象？
+       （1）class：外部类，成员(成员内部类，静态内部类)，局部内部类，匿名内部类
+       （2）interface：接口
+       （3）[]：数组
+       （4）enum：枚举
+       （5）annotation：注解@interface
+       （6）primitive type：基本数据类型
+       （7）void
+
+4、类的加载器->ClassLoader
+    类的加载过程：加载-》链接-》初始化
+    ClassLoader的分类：
+        引导类加载器
+        扩展类加载器
+        系统类加载器
+    不在过多介绍
+
+5、Class类的使用：
+    创建类的对象：
+        ①调用Class对象的newInstance()方法  (无参构造)
+            要求：
+            1）类必须有一个无参数的构造器。
+            2）类的构造器的访问权限需要足够。
+        ②通过Class类的getDeclaredConstructor(Class[] parameterTypes)取得本类的指定形参类型的构造器
+            要求：
+            1）该方法的参数要求是Class类型的对象数组
+            2）该方法的返回值是Constructor类型的对象，仍需要调用newInstance(Object ...args)方法实例化对象
+        ③通过getConstructor方法获取Constructor对象数组，在调用newInstance方法
+            本质上同②
+
+    获取类的结构：
+         实现的全部接口
+            public Class<?>[] getInterfaces()          获取一个类实现的全部接口
+         所继承的父类
+            public Class<? Super T> getSuperclass()        返回表示此 Class 所表示的实体（类、接口、基本类型）的父类的Class。
+         全部的构造器
+            public Constructor<T>[] getConstructors()               返回此 Class 对象所表示的类的所有public构造方法。
+            public Constructor<T>[] getDeclaredConstructors()       返回此 Class 对象表示的类声明的所有构造方法。
+         全部的方法
+            public Method[] getDeclaredMethods()                    返回此Class对象所表示的类或接口的全部方法
+            public Method[] getMethods()                            返回此Class对象所表示的类或接口的public的方法
+         全部的Field
+            public Field[] getFields()                              返回此Class对象所表示的类或接口的public的Field。
+            public Field[] getDeclaredFields()                      返回此Class对象所表示的类或接口的全部Field。
+
+6、通过反射操作类的结构：
+    ①调用指定方法：
+        getMethod(String name,Class…parameterTypes)方法取得一个Method对象，
+        之后使用Object invoke(Object obj, Object[] args)进行调用
+        注意：
+            若原方法声明为private,则需要在调用此invoke()方法前，显式调用方法对象的setAccessible(true)方法
+    ②调用指定属性：
+         public Field getField(String name)                返回此Class对象表示的类或接口的指定的public的Field。
+         public Field getDeclaredField(String name)        返回此Class对象表示的类或接口的指定的Field。
+         在 在Field 中：
+             public Object get(Object obj) 取得指定对象obj上此Field的属性内容
+             public void set(Object obj,Object value) 设置指定对象obj上此Field的属性内容
+        注意：
+            若属性声明为private,则需要属性对象对象的setAccessible(true)方法
+
+7、反射包的其他介绍
+    ①Constructor类
+        方法声明                            功能描述
+        getModifiers()                  获取构造方法的修饰符
+        getName( )                      获取构造方法的名称
+        getParameterTypes()             获取构造方法中参数的类型
+        toString( )                     返回此构造方法的信息
+        newInstance(Object--initargs)   通过该构造方法的指定参数列表创建一个该类的对象,如果未设置参数则 表示采用默认无参的构造方法。
+    ②Method类
+        方法声明                                    功能描述
+        getModifiers()                          获取方法的权限修饰符
+        getName()                               获取方法的名称
+        getParameterTypes()                     获取方法的全部参数的类型
+        getReturnType()                         获取方法的返回值类型
+        getExceptionType()                      获取方法抛出的全部异常类型
+        newInstance( Object... initargs)        通过反射调用类中的方法
+    ③Filed类
+        方法声明                                功能描述
+        getModifiers()                      获取属性的权限修饰符
+        getName()                           获取属性的名称
+        isAccessible( )                     判断属性是否可被外部访问
+        setAccessible( Boolean flag)        设置属性是否可被外部访问
+        toString()                          返回Field类的信息
+        get(Object obj)                     获取指定对象中属性的具体内容
+        set(Object obj, Object value)       设置指定对象中属性的具体内容
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

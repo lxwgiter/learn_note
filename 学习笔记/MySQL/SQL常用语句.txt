@@ -1,0 +1,165 @@
+一、DDL
+    1、创建数据库
+        create database 数据库名 (charset utf-8)
+        create database if not exists  数据库名
+    2、创建表：
+        create table 表名称(
+            字段名 数据类型,
+            字段名 数据类型
+            );
+    3、删除数据库：
+        drop database 数据库名;
+        drop database  if exists  数据库名
+    4、删除表：
+        drop table 表名称;
+二、DML
+    1、查询语句
+    2、别名的查找方式
+        SELECT last_name AS name, commission_pct comm   #省略 AS
+        FROM  employees;
+        或
+        SELECT last_name "Name", salary*12 "Annual Salary"  #用双引号括起来
+        FROM  employees;
+    3、去除重复行查询，DISTINCT关键字：
+        SELECT DISTINCT department_id
+        FROM  employees;
+        注意事项：
+            ①DISTINCT 需要放到所有列名的前面，如果写成 SELECT salary, DISTINCT department_id FROM employees 会报错。
+            ②DISTINCT 其实是对后面所有列名的组合进行去重，如果你想要看都有哪些不同的部门（department_id），只需
+            要写 DISTINCT department_id 即可，后面不需要再加其他的列名了。
+            ③组合去重：所有声明的字段都一样才可以去重
+    4、常数查询：
+        就是在 SELECT 查询结果中增加一列固定的常数列。这列的取值是我们指定的。
+        使用情景：
+            SELECT '尚硅谷' as "就职单位", last_name FROM employees;
+    5、条件查询：
+        SELECT 字段1,字段2
+        FROM 表名
+        WHERE 过滤条件
+    6、排序查询：
+        OEDER BY关键字      ASC（ascend）: 升序      DESC（descend）:降序
+        单列排序：
+            SELECT  last_name, job_id, department_id, hire_date
+            FROM   employees
+            WHERE 过滤条件
+            ORDER BY hire_date DESC ;
+        多列排序(多级排序)：
+            SELECT last_name, department_id, salary
+            FROM  employees
+            ORDER BY department_id, salary DESC;
+            按照声明顺序进行多级排序。
+        默认升序
+    7、分页查询：
+        语法：LIMIT 位置偏移量(从0开始), 每页的行数
+        分页显式公式：（当前页数-1）*每页条数，每页条数
+        注意：LIMIT 子句必须放在整个SELECT语句的最后！
+    8、多表查询：
+        多表查询分为：等值连接vs非等值连接、自连接vs非自连接、内连接vs外连接
+        等值连接：
+            SELECT last_name, department_name
+            FROM employees, departments
+            WHERE employees.department_id = departments.department_id;
+            注意点：
+            ①可以定义表的别名   ②尽量全部使用表名.字段名的格式优化查询
+            ③可以进行3个表或者更多表的关联查询，过滤条件为n-1个，中间用and连接
+        非等值连接：
+            SELECT e.last_name,e.salary,j.grade_level
+            FROM e,j
+            WHERE e.`salary` BETWEEN j.`lowest_sal` AND j.`highest_sal`;
+            ①e表的每一条数据都去与j表匹配，返回结果为1的合并。相当于做了笛卡尔积，等值连接也是如此
+        自连接：一张表当做两张表操作，非自连接相反
+
+        内连接：
+            只返回可以做连接的数据，左表中未匹配的数据和右表中未匹配的数据不显示，以上都是SQL92内连接
+            SQL99内连接语法： JOIN、INNER JOIN、CROSS JOIN 都表示内连接
+        外连接：
+            mysql只支持SQL99语法  ---》JOIN 表名 ON 连接条件
+            ①左外连接:
+                LEFT  OUTER  JOIN 表名  ON 连接条件
+            ②右外连接
+                RIGHT OUTER JOIN 表名 ON   连接条件
+            ③满外连接--->mysql不支持SQL99中的FULL JOIN
+                通过UNION有两种实现方式，通过UNION ALL有一种实现方式
+            7种连接方式详见pdf
+
+
+
+
+三、DCL
+
+四、其他
+    1、Windows-DOS登录语句：
+        mysql -h localhost -P 3306 -u root -p
+        Enter password:****
+    2、Windows-DOS退出语句：
+        exit或者quit
+    3、查询版本信息：
+        select version()
+    4、查看所有的数据库：
+        show databases
+    5、使用数据库：
+        use 数据库名
+    6、查看数据库下的表：
+        show tables from 数据库名
+    7、查看表的创建信息：
+        show create table 表名称\G
+    8、查看数据库的创建信息：
+        show create database 数据库名\G
+    9、查看MySQL的编码字符集：-->可到my.ini配置文件中进行修改，pdf02
+        show variables like 'character_%';
+        show variables like 'collation_%';
+    10、别名关键字---as，可省略   别名可以使用双引号括起来，就可以包含空格等
+    11、Windows-DOS数据库导入命令语句：
+        source 文件盘符路径     如：mysql> source d:\mysqldb.sql
+    11、空值参与运算：
+        所有运算符或列值遇到null值，运算的结果都为null
+    12、显示表结构
+        DESCRIBE 表名;
+        或
+        DESC 表名;
+    13、dual伪表查询：
+        常用于测试，如：
+        SELECT 12 % 3, 12 MOD 5 FROM dual;
+    14、UNION及UNION ALL操作符
+        作用：
+            都是合并两个结果集，格式如下：
+                SELECT column,... FROM table1
+                UNION [ALL]
+                SELECT column,... FROM table2
+        ①UNION:返回两个结果集的并集，去除重复记录，开销大
+        ②UNION ALL：返回并集，不去除重复记录
+        注意：要求两个结果集的列必须一致
+
+    15、ORDER BY在排序查询中表示排序，可以有多级排序
+        在聚合函数的伪表查询中表示分组，可以有多级分组
+    16、修改数据库字符集命令
+        alter database 数据库名 character set 字符集;
+    17、修改表的字符集
+        alter table 表名  character set 字符集;
+    18、查看存储引擎
+        show engines;
+
+
+
+五、非查询知识点：
+    1、常用运算符：
+        ①BETWEEN AND运算符，用于做区间限定
+            SELECT D FROM TABLE WHERE C BETWEEN A AND B
+        ②IN运算符
+            IN运算符用于判断给定的值是否是IN列表中的一个值，如果是则返回1，否则返回0。如果给定的值为NULL，或者IN列表中存在NULL，则结果为NULL。
+            IN运算符的应归属于where语句
+        ③LIKE运算符，模糊查询
+            LIKE运算符主要用来匹配字符串，通常用于模糊匹配，如果满足条件则返回1，否则返回0。如果给定的值或者匹配条件为NULL，则返回结果为NULL。
+            LIKE运算符的应归属于where语句
+        ④ REGEXP运算符
+            REGEXP运算符用来匹配字符串，语法格式为： expr REGEXP 匹配条件 。
+            REGEXP运算符的应归属于where语句
+        更多移步pdf
+    2、笛卡尔积错误：
+        多表查询的时候不写连接条件或者连接条件无效，等同于使用CROSS JOIN关键字
+
+    3、列的别名和表的别名
+        ①列的别名： 用AS定义，无需要注意的事项
+        ②表的别名：
+            通常用于多表查询中，给不同表起别名简化，用AS定义，但是一但定义，在整个查询语句中必须全部使用别名
+            归根结底在于查询语句的执行顺序，列的别名是定义在Selcet行，表的别名是定义在from行
