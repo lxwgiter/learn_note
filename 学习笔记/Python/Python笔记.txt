@@ -747,7 +747,29 @@
         ⑧对查询结果进行遍历: for r in result :
         ⑨关闭数据库连接：conn.close()
 
+28、Python常用数据类型转换
+        函数	                        作用
+        int(x)	                    将 x  转换为整数类型
+        float(x)	                将 x 转换成浮点数类型
+        str(x)	                    将 x 转换成字符串
+        repr(x)	                    将 x 转换成表达式字符串
+        complex(real[,imag])	    创建一个复数
+        eval(str)	                计算在字符串中的有效Python表达式，并返回一个对象
+        chr(x)	                    将整数 x 转换为一个字符
+        ord(x)	                    将一个整数 x 转换为它对应的整数值
+        bin(x)                      将一个整数x转换成一个二进制
+        hex(x)	                    将一个整数 x 转换为一个十六进制的字符串
+        oct(x)	                    将一个整数 x 转换为一个八进制的字符串
+        int(x,i)                    i(2,6,8,16),表示x本身是什么类型的进制，最终转化为十进制
+29、eval函数
+    eval()函数用来执行一个字符串表达式，并返回表达式的值。可以理解为eval的参数是字符串，
+    当执行eval(字符串)时，相当于直接把字符串写在外面，交给解释器运行。
+    详见https://blog.csdn.net/duyun0/article/details/118091844
 
+30、in / not in运算符
+    python中in/not in 可以作为判断容器中是否存在某元素的运算符，包括字符串，返回值为Ture或者False
+    语法格式： 对象 in 容器
+    如：str1="i love python"   -->   'python' in str1  ---->True
 
 
 
