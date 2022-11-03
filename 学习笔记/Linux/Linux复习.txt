@@ -352,12 +352,190 @@
             tar -zxvf pc.tar.gz
         案例4:将myhome.tar.gz解压到 /opt/tmp2 日录下
             (1) mkdir /opt/tmp2 (2) tar -zxvf /home/myhome.tar.gz -C /opt/tmp2
+15、权限的基本介绍：
+    -rwxrwxrwx 共10位，记作0-9位
+        第0位确定文件类型(d,-,l,c,b)
+        l是链接，相当于windows的快捷方式
+        d是目录，相当于windows的文件夹
+        c是字符设备文件，鼠标，键盘
+        b是块设备，比如硬盘
+        第1-3位确定所有者(该文件的所有者)拥有该文件的权限。---User
+        第4-6位确定所属组(同用户组的)拥有该文件的权限，--Group
+        第7-9位确定其他用户拥有该文件的权限--Other
+    rwx的说明：
+    ①作用到文件：
+        r：代表可读，可以读取，查看
+        w:代表可写，但并不代表可以删除该文件，可以删除该文件的前提是，对该文件所在的目录有写权限！
+        x:代表可被执行
+    ②作用到目录：
+        r:可读，即可用ls命令查看目录内容
+        w:可修改，可以对目录内容进行创建、删除、重命名，也可重命名目录本身。
+        x:代表可以进入目录
+    注：rwx权限可用数字代表：r=4，w=2，x=1.
 
+16、权限管理类
+    注：大部分命令需要相对应的权限！！！！
+    ①查看文件所有者
+        ls -ahl         列出文件名，文件类型，权限情况，所有者，所在组，最后修改日期，文件字节大小...
+    ②修改文件所有者
+        chown  用户名  文件名
+        可选参数：R  若文件是目录，使用-R递归生效。
+    ③创建组
+        groupadd 组名
+        创建用户有与之类似的命令：即：useradd -g 组名 用户名
+    ④修改文件/目录所在组
+        chgrp 组名 文件名
+        可选参数：R  若文件是目录，使用-R递归生效。
+    ⑤改变用户所在组(root用户权限)
+        usermod -g 新组名 用户名
+        usermod -d 目录名 用户名
+    ⑥修改权限
+        chmod指令，可修改文件或者是目录的权限
+        使用方式一：
+            u：所有者，g:所有组，o:其他人，a:所有人(u,g,o的总和)
+            1) chmod    u=rwx,g=rx,o=x 文件/目录名
+            2) chmod    o+w 文件/目录名
+            3) chmod    ugo-rx    文件/日录名
+        使用方式二：
+            1) chmod 751 文件/目录名
+            只能同时使用三个数，只此一种用法(可指正)
 
+17、定时任务调度
+    crond指令：
+    语法：
+        crontab [选项] 指令/脚本
+        service crond restart   [重启任务调度]
 
+    常用选项：
+        -e  编辑crontab定时任务
+        -l  查询crontab任务
+        -r  删除当前用户所有的crontab任务
+    执行时间设置：
+        见pdf
+    
+    at指令：
+        区别于crontab指令的是at指定的任务调度只会执行一次。
+        见pdf。
 
+18、磁盘分区、挂载
+    Linux硬盘分IDE硬盘和SCSI硬盘，目前基本上是SCSI硬盘
+    IDE硬盘，驱动标识符为"hdx~"
+    SCSI硬盘，驱动标识符为"sdx~"
+        “x”为盘号(a 为基本盘，b为基本从属盘，c为辅助主盘，d为辅助从属盘) ,
+        “~”代表分区，前四个分区用数字1到4表示，它们是主分区或扩展分区，从5开始就是逻辑分区。
+        例，hda3 表示为第一一个IDE硬盘:上的第三个主分区或扩展分区,hdb2表示为第二个IDE硬盘上的第二个主分区或扩展分区。
+    查看所有设备的挂载情况：
+        lsblk 或者 lsblk -f
+    查询系统磁盘使用情况：
+        df -h
+    查询指定目录磁盘使用情况:
+        du [选项]   文件名
+        选项：
+            -s              指定目录占用大小汇总
+            -h              带计量单位
+            -a              含文件
+            --max-depth=l   子目录深度
+            -C              列出明细的同时，增加汇总值
 
+19、网络配置
+    ①查看ip地址、网关和域名解析器：
+        ifconfig
+    ②测试主机之间的网络连通性
+        ping 域名/ip地址
+    ③网络环境配置
+        1)自动获取ip地址
+            缺点:ip地址是不断变化的，不推荐
+        2)手动设置ip地址
+            vi /etc/sysconfig/network-scripts/ifcfg-ens33
+            需要修改的四行：
+                BOOTPROTO= =static              #IP的配置方法[none|static|bootpldhcp]        
+                IPADDR= 192.168.200.1 30        #IP地址
+                GATEWAY=192.1 68.200.2          #网关
+                DNS1=192.1 68.200.2             #域名解析器
+            重启网络服务或者重启系统生效       
+            serv1cenetwork、restart、reboot
+    ④主机名及hosts映射
+        设置主机名：
+            1) 为了方便记忆，可以给linux系统设置主机名，也可以根据需要修改主机名
+            2)指令hostname :查看主机名
+            3)修改文件在/etc/hostname 指定
+            4)修改后，重启生效
+        设置hosts映射：
+            linux：     在/etc/hosts 文件指定
+            windows     在C:\Windows\System32\drivers\etc\hosts文件指定
+            格式：192.168.200.1 ThinkPad-PC
+    ⑤域名解析过程
+        1)什么是hosts？
+            一个文本文件，用来记录IP和Hostname(主机名)的映射关系
+        2)什么是DNS？
+            DNS,就是Domain Name System的缩写，翻译过来就是域名系统，是互联网上作为域名和IP地址相互映射的一个分布式数据库
+        3)解析过程（简略版）
+            浏览器缓存->本地hosts文件->域名解析器...
 
+20、进程管理
+    每个进程都会被分配一个pid，pid对应一个唯一的进程。PPID表示父进程，UID表示用户ID。
+    ①ps指令
+        语法 ps -[选项] (|grep xxx)            可以不加选项使用
+        常用选项：
+            ps -a        :显示当前终端的所有进程信息
+            ps -u        :以用户的格式显示进程信息
+            ps -x        :显示后台进程运行的参数
+            ps -e        ：显示所有进程
+            ps -f        ：全格式显示
+    ②kill、killall指令
+        kill [选项] 进程号          (功能描述:通过进程号杀死/终止进程)
+        killall 进程名称            (功能描述:通过进程名称杀死进程，也支持通配符，这在系统因负载过大而变得很慢时很有用)
+        选项：  -9:表示强迫进程立即停止
+    ③pstree指令
+        查看进程树
+        pstree [选项]       可以更加直观的来看进程信息
+        常用选项：
+            -p:显示进程的PID
+            -u:显示进程的所属用户
+
+    服务管理：
+        服务的本质就是进程，我们可以称之为守护线程。
+        ①service管理指令：
+            语法：  service 服务名  [start | stop | restart| reload | status]
+        ②chkconfig指令：
+            通过chkconfig命令可以给服务的各个运行级别设置自启动/关闭
+            chkconfig基本语法
+                1)chkconfig --list [|grep XXX] 查看服务
+                2)chkconfig 服务名 --list
+                3)chkconfig --level 5 服务名 on/off
+
+        ③systemctl指令
+            语法：systemctl [start | stop| restart | status | enable| disable] 服务名
+            应用实例：
+                ①查看防火墙状态：systemctl status firewalld 
+                ②关闭防火墙：systemctl stop firewalld 
+                ③打开防火墙：systemctl stop firewalld 
+                ④永久开启/关闭防火墙 ：systemctl [enable | disable] firewalld
+
+        ④firewall指令
+            该指令用于设置哪些端口在防火墙中开放、哪些关闭
+            1)打开端口:         firewall-cmd --permanent --add-port=端口号/协议
+            2)关闭端口:         firewall-cmd --permanent --remove-port=端口号/协议
+            3)重 新载入，才能生效:      firewall-cmd --reload
+            4)查询端口是否开放:  firewall-cmd --query-port=端口/协议
+
+    动态进程监视：
+        top指令
+            top与ps命令很相似。它们都用来显示正在执行的进程。top与ps最大的不同之处，在于top在执行一段时间可以更新正在运行的的进程。
+            选项：
+                -d   秒数指定top命令每隔几秒更新。默认是3秒
+                -i   使top不显示任何闲置或者僵死进程。
+                -P   通过指定监控进程ID来仅仅监控某个进程的状态。
+            动态交互快捷键：
+                P   以CPU使用率排序,默认就是此项
+                M   以内存的使用率排序
+                N   以PID排序
+                q   退出top
+
+    网络监控：
+        netstat [选项]
+            -an     按一定顺序排列输出
+            -p      显示哪个进程在调用
 
 
 

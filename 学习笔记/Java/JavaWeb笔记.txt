@@ -777,88 +777,145 @@
         该客户端之前访问过服务器，可以实现免账号或者免密登录。
 
 十一、Session
-1、什么是Session？
-    ①Session 就一个接口（HttpSession）。
-    ②Session 就是会话。它是用来维护一个客户端和服务器之间关联的一种技术。
-    ③每个客户端都有自己的一个 Session 会话。(使用Cookie保存，在发起请求时通过响应头通知服务器)
-    ④Session 会话中，我们经常用来保存用户登录之后的信息。
-2、如何创建Session？
-    涉及API：
-        1)request.getSession()
-            ①第一次调用是：创建 Session 会话
-            ②之后调用都是：获取前面创建好的 Session 会话对象。
-        2)isNew();
-            判断到底是不是刚创建出来的（新的）
-            true 表示刚创建
-            false 表示获取之前创建
-        3)getId()
-            得到 Session 的会话 id 值
-            每个会话都有一个身份证号。也就是 ID 值。而且这个 ID 是唯一的。
+    1、什么是Session？
+        ①Session 就一个接口（HttpSession）。
+        ②Session 就是会话。它是用来维护一个客户端和服务器之间关联的一种技术。
+        ③每个客户端都有自己的一个 Session 会话。(使用Cookie保存，在发起请求时通过响应头通知服务器)
+        ④Session 会话中，我们经常用来保存用户登录之后的信息。
+    2、如何创建Session？
+        涉及API：
+            1)request.getSession()
+                ①第一次调用是：创建 Session 会话
+                ②之后调用都是：获取前面创建好的 Session 会话对象。
+            2)isNew();
+                判断到底是不是刚创建出来的（新的）
+                true 表示刚创建
+                false 表示获取之前创建
+            3)getId()
+                得到 Session 的会话 id 值
+                每个会话都有一个身份证号。也就是 ID 值。而且这个 ID 是唯一的。
 
-3、Session域中的数据存取：
-    ①向Session域中存数据：
-        Session对象.setAttribute("key", "value");//必须都是String类型的键值对
-    ②取Session域中的数据：
-        Session对象.getAttribute("key");//返回值类型为String类型
+    3、Session域中的数据存取：
+        ①向Session域中存数据：
+            Session对象.setAttribute("key", "value");//必须都是String类型的键值对
+        ②取Session域中的数据：
+            Session对象.getAttribute("key");//返回值类型为String类型
 
-4、Session的生命控制
-    1)相关API：
-        ①public void setMaxInactiveInterval(int interval);
-            设置 Session 的超时时间（以秒为单位），超过指定的时长，Session就会被销毁。
-            参数值：
-                正数的时候，设定 Session 的超时时长。
-                负数表示永不超时（极少使用）
-        ②public int getMaxInactiveInterval()
-            获取 Session 的超时时间
-        ③public void invalidate()
-            让当前 Session 会话马上超时无效。
-    2)Session对象的默认生命时长：
-        Session 默认的超时时间长为 30 分钟。
-        因为在Tomcat服务器的配置文件web.xml中默认有以下的配置，它就表示配置了当前Tomcat服务器下所有的Session
-        超时配置默认时长为：30 分钟。
-        <session-config>
-        <session-timeout>30</session-timeout>
-        </session-config>
-    3)修改Session的默认生命时长
-        方式一：
-            在当前工程的web目录下的web.xml文件中配置默认时长，作用于该web工程下所有的资源。
-            声明格式如下：
-                <session-config>
-                <session-timeout>20</session-timeout>
-                </session-config>
-        方式二：
-            session.setMaxInactiveInterval(int interval)
-            单独设置超时时长，仅作用于当前Session对象。
+    4、Session的生命控制
+        1)相关API：
+            ①public void setMaxInactiveInterval(int interval);
+                设置 Session 的超时时间（以秒为单位），超过指定的时长，Session就会被销毁。
+                参数值：
+                    正数的时候，设定 Session 的超时时长。
+                    负数表示永不超时（极少使用）
+            ②public int getMaxInactiveInterval()
+                获取 Session 的超时时间
+            ③public void invalidate()
+                让当前 Session 会话马上超时无效。
+        2)Session对象的默认生命时长：
+            Session 默认的超时时间长为 30 分钟。
+            因为在Tomcat服务器的配置文件web.xml中默认有以下的配置，它就表示配置了当前Tomcat服务器下所有的Session
+            超时配置默认时长为：30 分钟。
+            <session-config>
+            <session-timeout>30</session-timeout>
+            </session-config>
+        3)修改Session的默认生命时长
+            方式一：
+                在当前工程的web目录下的web.xml文件中配置默认时长，作用于该web工程下所有的资源。
+                声明格式如下：
+                    <session-config>
+                    <session-timeout>20</session-timeout>
+                    </session-config>
+            方式二：
+                session.setMaxInactiveInterval(int interval)
+                单独设置超时时长，仅作用于当前Session对象。
 
-5、Session超时的概念：
-        指客户端两次发起请求访问Session对象的间隔超过了Session对象的生命时长。
-6、Session与浏览器之间的技术内幕
-        Session 技术，底层其实是基于 Cookie 技术来实现的！
-        模拟浏览器和服务器之间的交互：
-            ①当浏览器第一次访问服务器时，服务器的req.getSession方法发现请求头中的Cookie中没有Session信息，就会创建Session对象
-            并保存到服务器的内存中。然后通过响应通知浏览器保存一个Cookie对象key="JSESSIONID",vaklue=Session对象的ID。
-            ②当浏览器再次访问服务器时，请求头会带着已经保存的Cookie对象，此时req.getSession方法会根据ID到服务器内存中查找对应的
-            Session对象。
-            ③若是手动的在浏览器删除保存Session信息的Cookie，则会重复①②步骤....
+    5、Session超时的概念：
+            指客户端两次发起请求访问Session对象的间隔超过了Session对象的生命时长。
+    6、Session与浏览器之间的技术内幕
+            Session 技术，底层其实是基于 Cookie 技术来实现的！
+            模拟浏览器和服务器之间的交互：
+                ①当浏览器第一次访问服务器时，服务器的req.getSession方法发现请求头中的Cookie中没有Session信息，就会创建Session对象
+                并保存到服务器的内存中。然后通过响应通知浏览器保存一个Cookie对象key="JSESSIONID",vaklue=Session对象的ID。
+                ②当浏览器再次访问服务器时，请求头会带着已经保存的Cookie对象，此时req.getSession方法会根据ID到服务器内存中查找对应的
+                Session对象。
+                ③若是手动的在浏览器删除保存Session信息的Cookie，则会重复①②步骤....
 
-7、Session的应用
-    存储会话信息供浏览器后续请求使用，可以获取并修改变量的值。和cookie一起使用识别同一个客户。
-8、Cookie和Session的区别和联系：
-    ①Cookie机制采用的是在客户端保持状态的方案，而Session机制采用的是在服务器端保持状态的方案。
-    ②Cookie对象保存在浏览器中，通过请求头传递给服务器，服务器可以得到相应的键值对。
-    ③Session对象保存在服务器内存中，真正要操作Session对象需要得要SessioinID，定位到该对象。
+    7、Session的应用
+        存储会话信息供浏览器后续请求使用，可以获取并修改变量的值。和cookie一起使用识别同一个客户。
+    8、Cookie和Session的区别和联系：
+        ①Cookie机制采用的是在客户端保持状态的方案，而Session机制采用的是在服务器端保持状态的方案。
+        ②Cookie对象保存在浏览器中，通过请求头传递给服务器，服务器可以得到相应的键值对。
+        ③Session对象保存在服务器内存中，真正要操作Session对象需要得要SessioinID，定位到该对象。
+
+十二、Filter
+    1、什么是Filter？
+        ①Filter 过滤器它是 JavaWeb 的三大组件之一。三大组件分别是：Servlet 程序、Listener 监听器、Filter 过滤器
+        ②Filter 过滤器它是 JavaEE 的规范。也就是接口
+        ③Filter 过滤器它的作用是： 拦截请求，过滤响应。
+    2、常见的拦截场景？
+        ①权限检查
+        ②日记操作
+        ③事务管理  ……等等
+
+    3、Filter的使用？
+        ①编写一个类去实现 Filter 接口
+        ②实现过滤方法 doFilter()
+        ③到 web.xml 中去配置 Filter 的拦截路径
+    4、关于doFilter方法
+        doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
+        编写步骤：
+            ①需要将servletRequest类型转化为HttpServletRequest
+            ②进行条件判断：
+                满足条件进行请求转发或者重定向(放行)
+                不满足条件，执行filterChain的同名方法doFilter(servletRequest,servletResponse)。
+        FilterChain对象的doFilter方法：
+            ①按照web.xml中的Filter配置信息，执行下一个FiIter过滤器(如果有Filter)
+            ②执行目标资源(没有Filter)
+            ③当访问到尽头时，无论是否成功，都会原路返回，依次执行doFilter方法下的代码，这也是异常捕获要放到filterChain.doFilter之后的原因。
+            ④所有filter和目标资源默认都执行在同一个线程中
+            ⑤多个Filter共同执行的时候，它们都使用同一个Request对象。
 
 
+    5、web.xml中的配置
+        示例：
+            <filter>
+                <filter-name>AdminFilter</filter-name>
+                <filter-class>com.atguigu.filter.AdminFilter</filter-class>
+            </filter>
+            <filter-mapping>
+                <filter-name>AdminFilter</filter-name>
+                <url-pattern>/admin/*</url-pattern>
+                <url-pattern>*.html</url-pattern>
+            </filter-mapping>
 
+        匹配模式：
+        --精确匹配          /target.jsp
+            以上配置的路径，表示请求地址必须为：http://ip:port/工程路径/target.jsp
+        --目录匹配          /admin/*
+            以上配置的路径，表示请求地址必须为：http://ip:port/工程路径/admin/*
+        --后缀名匹配         *.html
+            以上配置的路径，表示请求地址必须以.html 结尾才会拦截到
+        注： ①<url-pattern>标签可以写多个。
+            ②只有后缀名匹配不是以斜线打头的。
+            ③Filter 过滤器它只关心请求的地址是否匹配，不关心请求的资源是否存在。
 
+    6、Filter的生命周期：
+            ①构造器方法
+            ②init 初始化方法
+            ③doFilter 过滤方法
+            ④destroy 销毁
+                第 1，2 步，在 web 工程启动的时候执行（Filter 已经创建）
+                第 3 步，每次拦截到请求，就会执行
+                第 4 步，停止 web 工程的时候，就会执行（停止 web 工程，也会销毁 Filter 过滤器）
 
-
-
-
-
-
-
-
+    7、FilterConfig类
+        FilterConfig 类见名知义，它是 Filter 过滤器的配置文件类。
+        Tomcat 每次创建 Filter 的时候，也会同时创建一个 FilterConfig 类，这里包含了 Filter 配置文件的配置信息。
+        FilterConfig 类的作用是获取 filter 过滤器的配置内容：
+            ①获取 Filter 的名称 filter-name 的内容
+            ②获取在 Filter 中配置的 init-param 初始化参数
+            ③获取 ServletContext 对象
 
 
 
@@ -907,6 +964,6 @@
             resp.sendRedirect(“参数”)中的字符串参数没有此类功能，需要使用req.getContextPath()+"/"
         14、目前的工程都是基于JavaEE8的，即Servlet使用的是javax包，而不是Jakarta包
             若创建工程时选用了JavaEE9，则会默认导入Jakarta包，会报错
-
-
+        15、关于数据库事务性的代码，不要进行完全捕获，最后统一交给过滤器进行处理。
+        16、Filter的实现类中不仅要实现doFilter方法，还要实现init和destory方法，且后两个方法必须空实现，否则war包打包出错。
 

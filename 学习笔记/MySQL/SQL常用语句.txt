@@ -1,18 +1,52 @@
 一、DDL
     1、创建数据库
-        create database 数据库名 (charset utf-8)
-        create database if not exists  数据库名
+        CREATE DATABASE 数据库名 
+        CREATE DATABASE 数据库名 CHARACTER SET 字符集;
+        CREATE DATABASE IF NOT EXISTS 数据库名;
+        注意：DATABASE 不能改名
+    2、操作数据库：
+        查看当前所有的数据库：SHOW DATABASES; 
+        查看当前正在使用的数据库：SELECT DATABASE();  #使用的一个 mysql 中的全局函数
+        查看指定库下所有的表：SHOW TABLES FROM 数据库名;
+        查看数据库的创建信息：SHOW CREATE DATABASE 数据库名;或者SHOW CREATE DATABASE 数据库名\G
+        使用/切换数据库：USE 数据库名;
+    3、修改数据库：
+        更改数据库字符集：ALTER DATABASE 数据库名 CHARACTER SET 字符集;
+        删除指定的数据库：DROP DATABASE IF EXISTS 数据库名;或者DROP DATABASE 数据库名;
     2、创建表：
-        create table 表名称(
-            字段名 数据类型,
-            字段名 数据类型
+        方式一：
+            CREATE TABLE [IF NOT EXISTS] 表名(
+                字段1 数据类型 [约束条件] [默认值],
+                字段2 数据类型 [约束条件] [默认值],
+                字段3 数据类型 [约束条件] [默认值],
+                ……
+                [表约束条件]
             );
-    3、删除数据库：
-        drop database 数据库名;
-        drop database  if exists  数据库名
-    4、删除表：
-        drop table 表名称;
-二、DML
+        方式二：（AS不可省略）
+            CREATE TABLE 新表 AS SELECT * FROM 现有表;
+            CREATE TABLE 新表 AS SELECT * FROM 现有表 WHERE 1=2; -- 创建的新表是空表
+    3、查看表结构：SHOW CREATE TABLE 表名\G
+    4、修改表：
+        使用 ALTER TABLE 语句可以实现：
+            ①向已有的表中添加列：ALTER TABLE 表名 ADD  字段名 字段类型 【FIRST|AFTER 字段名】;
+            ②修改现有表中的列：ALTER TABLE 表名 MODIFY  字段名 字段类型 【DEFAULT 默认值】【FIRST|AFTER 字段名】;
+            ③重命名现有表中的列：ALTER TABLE 表名 CHANGE  列名 新列名 新数据类型;
+            ④删除现有表中的列：ALTER TABLE 表名 DROP 字段名
+        重命名表专用 RENAME TO 语句：
+            方式一：RENAME TABLE 旧表名 TO 新表名;
+            方式二：ALTER table 旧表名  RENAME [TO] 新表名;  -- [TO]可以省略
+    5、删除表：
+        注意点：到一张表和其他表不再关联时，才可删除。删除成功后，所有相关事务都被提交，DROP语句不可回滚
+        DROP TABLE [IF EXISTS] 数据表1 [, 数据表2, …, 数据表n];
+    6、清空表：
+        TRUNCATE TABLE语句：删除表中所有的数据，释放表的存储空间，不可回滚
+        TRUNCATE TABLE detail_dept;
+        DELETE FROM语句：属于DML，可回滚
+    7、删除数据库：
+        DROP DATABASE 数据库名;
+        DROP DATABASE  IF EXISTS  数据库名
+
+二、DQL（也可叫DML）
     1、查询语句
     2、别名的查找方式
         SELECT last_name AS name, commission_pct comm   #省略 AS
@@ -37,7 +71,7 @@
         FROM 表名
         WHERE 过滤条件
     6、排序查询：
-        OEDER BY关键字      ASC（ascend）: 升序      DESC（descend）:降序
+        OEDER BY 关键字      ASC（ascend）: 升序      DESC（descend）:降序
         单列排序：
             SELECT  last_name, job_id, department_id, hire_date
             FROM   employees
@@ -82,10 +116,44 @@
                 通过UNION有两种实现方式，通过UNION ALL有一种实现方式
             7种连接方式详见pdf
 
+    9、子查询：
+        分类方式：①单行子查询&多行子查询    ②相关子查询&非相关子查询
+        单行子查询：
+            使用单行操作符：“<、>、=、>=、<=、<>”
+        多行子查询：
+        -多行操作符：
+            IN      等于列表中的任意一个
+            ANY     需要和单行比较操作符一起使用，和子查询返回的某一个值比较
+            ALL     需要和单行比较操作符一起使用，和子查询返回的所有值比较
+            SOME    实际上是ANY的别名，作用相同，一般常使用ANY
+        非相关子查询：以上都是
+        相关子查询：
+            如果子查询的执行依赖于外部查询，通常情况下都是因为子查询中的表用到了外部的表，并进行了条件
+            关联，因此每执行一次外部查询，子查询都要重新计算一次，这样的子查询就称之为 关联子查询 。
+        
+        注：将子查询结果当作真正的表来使用时，比如直接写在FROM后、作为多表查询中的关联表等
+        一定要给查询结果起别名才可以使用。
 
 
 
-三、DCL
+三、DML：
+    注：增删改，由于约束的存在，也会出现执行失败的情况
+    ①增：（由于存在非空约束等，会存在插入失败的情况）（VALUES等价于VALUE）
+        所有字段按默认顺序插入数据：INSERT INTO 表名 VALUES (value1,value2,....);
+        为表的指定字段插入数据：INSERT INTO 表名 (column1 [, column2, …, columnn]) VALUES (value1 [,value2, …, valuen]);
+        同时插入多条记录：INSERT INTO 表名 VALUES (value1 [,value2, …, valuen]),(value1 [,value2, …, valuen]),……(value1 [,value2, …, valuen]);
+        将查询结果添加：INSERT INTO 目标表名 (c1,c2,c3...) SELECT (c1,c2,c3..) FROM 源表名 [WHERE condition]
+            -使用查询结果添加表数据时，不能使用AS，不用使用VALUES
+
+    ②删：(由于存在主键外键约束，存在删除失败的情况)
+        DELETE FROM语句：
+            DELETE FROM table_name [WHERE <condition>];
+    ③改:(由于各种约束，存在失败的情况)
+        UPDATE SET语句：
+            UPDATE 表名
+            SET 字段名=值, 字段名=值, … , 字段名=值
+            [WHERE condition]
+四、DCL
 
 四、其他
     1、Windows-DOS登录语句：
@@ -163,3 +231,16 @@
         ②表的别名：
             通常用于多表查询中，给不同表起别名简化，用AS定义，但是一但定义，在整个查询语句中必须全部使用别名
             归根结底在于查询语句的执行顺序，列的别名是定义在Selcet行，表的别名是定义在from行
+
+    4、MySQL中不允许聚合函数的嵌套，oracle中是允许的：
+    比如MIN(AVG(salary))在MySQL中不能书写，想要做到嵌套的效果需要给聚合函数的结果起别名，比如
+        SELECT MIN(avg_sal)
+        FROM (
+        SELECT AVG(salary) avg_sal
+        FROM employees
+        GROUP BY department_id) temp
+    5、EXISTS 与 NOT EXISTS关键字
+        在子查询中使用，见子查询pdf
+
+
+
