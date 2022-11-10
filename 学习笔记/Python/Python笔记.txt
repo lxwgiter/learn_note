@@ -771,7 +771,19 @@
     语法格式： 对象 in 容器
     如：str1="i love python"   -->   'python' in str1  ---->True
 
+31、for else 语句：
+    for i in range(2,10):
+        for n in range(2,i):
+            if i % n == 0:
+                #print(i, '=', n, '*', i//n)
+                break
+        else:
+            print('found it %s' %i)
+    这里的 else 并不属于 if 代码块根据官方文档的解释理解的意思：当迭代的对象迭代完并为空时，位于else的语句将会执行，
+    而如果在for循环里有break时，则会直接终止循环，并不会执行else里的代码
 
+32、逻辑运算符
+    python中没有"&&"和"||"逻辑判断符，取而代之的是and、or、not
 
 
 

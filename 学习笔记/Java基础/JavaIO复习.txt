@@ -1,0 +1,246 @@
+1、什么是IO？
+    I/O操作主要是指使用Java程序完成输人(Input)、输出(Output)操作。输人是指将文件内容以数据流的形式读人内存，
+    输出是指通过Java程序将内存中的数据写人文件,输入输出操作在实际开发中应用较为广泛。
+2、File类
+    java.io包中的File类是唯一一个可以代表磁盘文件的对象，它定义了一些用于操作文件的方法。
+    通过调用File类提供的各种方法,可以创建、删除或者重命名文件,判断硬盘上某个文件是否存在，查询文件最后修改时间，等等。
+    ①对File类的理解：
+        java.io.File类：文件和文件目录路径的抽象表示形式，与平台无关
+        File 能新建、删除、重命名文件和目录，但 File 不能访问文件内容本身。如果需要访问文件内容本身，则需要使用输入/输出流。
+        想要在Java程序中表示一个真实存在的文件或目录，那么必须有一个File对象，但是Java程序中的一个File对象，可能没有一个真实存在的文件或目录。
+        File对象可以作为参数传递给流的构造器
+    ②File类的实例化：
+         public File(String pathname)  以pathname为路径创建File对象，可以是 绝对路径或者相对路径
+         public File(String parent,String child)   以parent为父路径，child为子路径创建File对象。
+         public File(File parent,String child) 根据一个父File对象和子文件路径创建File对象
+        注：File类的实例化方法不会抛异常，即使文件不存在，也可以创建File对象，流的实例化才会抛异常。
+        File构造方法并不支持多级目录创建，例如向一个E:\Temp\a.txt文件写入时，若Temp目录不存在，则会报错。
+    ③File类的常用方法：
+         File 类的获取功能
+             public String getAbsolutePath()：获取绝对路径
+             public String getPath() ：获取路径
+             public String getName() ：获取名称
+             public String getParent()：获取上层文件目录路径。若无，返回null
+             public long length() ：获取文件长度（即：字节数）。不能获取目录的长度。
+             public long lastModified() ：获取最后一次的修改时间，毫秒值
+             public String[] list() ：获取指定目录下的所有文件或者文件目录的名称数组
+             public File[] listFiles() ：获取指定目录下的所有文件或者文件目录的File数组
+
+         File 类的重命名功能
+             public boolean renameTo(File dest):把文件重命名为指定的文件路径
+
+         File 类的判断功能
+             public boolean isDirectory()：判断是否是文件目录
+             public boolean isFile() ：判断是否是文件
+             public boolean exists() ：判断是否存在
+             public boolean canRead() ：判断是否可读
+             public boolean canWrite() ：判断是否可写
+             public boolean isHidden() ：判断是否隐藏
+
+         File 类的创建功能
+             public boolean createNewFile() ：创建文件。若文件存在，则不创建，返回false
+             public boolean mkdir() ：创建文件目录。如果此文件目录存在，就不创建了。如果此文件目录的上层目录不存在，也不创建。
+             public boolean mkdirs() ：创建文件目录。如果上层文件目录不存在，一并创建
+            注意事项：如果你创建文件或者 文件 目录没有写盘符路径 ，那么默认在项目路径下
+
+         File 类的删除功能
+             public boolean delete()：删除文件或者文件夹删除注意事项：
+            Java中的删除不走 回收站。要删除一个文件目录，请注意该文件目录内不能包含文件或者文件目录
+
+    ④文件的递归遍历、递归删除
+        很简单，自己实现。
+    ⑤FilenameFilter类
+        File类提供了一个重载的list方法和listFiles该方法接收一个FleameFiter类型的参数。FlaneFilerer 是一个接口，叫做文件过滤器，
+        其中定义了抽象方法accept()用于依次对指定File的所有子目录或文件进行迭代调用list()方法时,需要实现FilenameFilter,并在acepe()方法中进行筛选
+        常规实现如下：
+            //创建文件过滤器对象
+            FilenameFilter filter = new FilenameFilter() {
+                public boolean accept(File dir, String name) {
+                File currFile = new File(dir, name) ;
+                //如果文件名以.java结尾，则返回true; 否则返回false
+                if (currFile.isFile() && name .endsWith(".java")) {
+                    return true;
+                } else {
+                    return false;
+            }
+            Strinf[] fileString=file.list(filter);
+        lambda实现如下：
+            File[] FileArray = file.listFiles((dir, name) -> new File(dir,name).isFile()&&name.endsWith(".java"));
+
+3、流的分类：
+    按操作数据单位不同分为：字节流(8 bit)，字符流(16 bit)
+    按数据流的流向不同分为： 输入流，输出流
+    按流的角色的不同分为：节点流、处理流
+
+    (抽象基类)          字节流               字符流
+    输入流             InputStream         Reader
+    输出流             OutputStream        Writer
+
+     节点流：直接从数据源或目的地读写数据
+     处理流：不直接连接到数据源或目的地，而是“连接”在已存在的流（节点流或处理流）之上，通过对数据的处理为程序提供更为强大的读写功能。
+    节点流：
+        FileInputStream、FileOutputStream、FileReader、FileWriter(其余均为处理流)
+
+4、InputStream & Reader
+    InputStream 和 Reader 是所有 输入流的基类。
+    InputStream（典型实现：FileInputStream）
+        int read()
+        int read(byte[] b)
+        int read(byte[] b, int off, int len)
+    Reader（典型实现：FileReader）
+        int read()
+        int read(char [] c)
+        int read(char [] c, int off, int len)
+    程序中打开的文件 IO 资源不属于内存里的资源，垃圾回收机制无法回收该资源，所以应该件 显式关闭文件 IO  资源
+
+    ①InputStream
+          int read()
+            注意：字节流读取单个字节，是使用int类型读取的，读到结尾时，返回-1。写出时也是int类型。
+          int read(byte[] b)
+          int read(byte[] b, int off,int len)
+          public void close() throws IOException
+    ②Reader
+         int read()
+            注意：字符流流读取单个字符，是使用int类型读取的，读到结尾时，返回-1。写出时也是int类型。
+         int read(char[] cbuf)
+         int read(char[] cbuf,int off,int len)
+         public void close() throws IOException
+
+5、OutputStream & Writer
+    ①OutputStream
+         void write(int b)
+            注意：字节流流写入单个字节，是使用int类型写入的。
+         void write(byte[] b)
+         void write(byte[] b,int off,int len)
+         public void flush()throws IOException
+         public void close() throws IOException
+    ②Writer
+         void write(int c)
+            注意：字符流流写入单个字符，是使用int类型写入的。
+         void write(char[] cbuf)
+         void write(char[] cbuf,int off,int len)
+         void write(String str)。
+         void write(String str,int off,int len)
+         void flush()
+         public void close() throws IOException
+
+6、文件的复制
+    ①建立一个流对象，将已存在的一个文件加载进流。
+         FileReader fr = new FileReader(new File(“Test.txt”));
+         FileWriter fw = new FileWriter(new File(“Test.txt”));
+    ②创建一个临时存放数据的数组。
+         char[] ch = new char[1024];
+    ③调用流对象的读取方法将流中的数据读入到数组中。
+         len=fr.read(ch);
+         fw.write(ch,0,len);
+    ④关闭资源。
+         fr.close();
+7、节点流使用时的注意点：
+     在写入一个文件时，如果使用构造器FileOutputStream(file)，则 目录 下有同名文件将被覆盖
+     如果使用构造器FileOutputStream(file,true)，则目录下的同名文件不会被覆盖，在文件内容末尾追加内容。
+     在写入一个文件时，如果使用构造器FileWriter(file)，则 目录 下有同名文件将被覆盖
+     如果使用构造器FileWriter(file,true)，则目录下的同名文件不会被覆盖，在文件内容末尾追加内容。
+     在读取文件时，必须保证该文件已存在，否则报异常。
+
+8、缓冲流：
+     为了提高数据读写的速度，Java API提供了带缓冲功能的流类，在使用这些流类时，会创建一个内部缓冲区数组，缺省使用8192个字节(8Kb)的缓冲区。
+     缓冲流要“套接”在相应的节点流之上，根据数据操作单位可以把缓冲流分为：
+        BufferedInputStream和BufferedOutputStream
+        BufferedReader和BufferedWriter
+     当读取数据时，数据按块读入缓冲区，其后的读操作则直接访问缓冲区
+     当使用BufferedInputStream读取字节文件时，BufferedInputStream会一次性从文件中读取8192个(8Kb)，
+    存在缓冲区中，直到缓冲区装满了，才重新从文件中读取下一个8192个字节数组。
+     向流中写入字节时，不会直接写到文件，先写到缓冲区中直到缓冲区写满，BufferedOutputStream才会把缓冲区中的
+    数据一次性写到文件里。使用方法flush()可以强制将缓冲区的内容全部写入输出流
+     关闭流的顺序和打开流的顺序相反。只要关闭最外层流即可，关闭最外层流会相应关闭内层节点流
+     flush()方法的使用：手动将buffer中内容写入文件
+     如果是带缓冲区的流对象的close()方法，不但会关闭流，还会在关闭流之前刷新缓冲区，关闭后不能再写出
+
+    1.BufferedWriter中：
+        void newLine() : 写入一行行分隔符，分隔符由系统决定，不同系统分隔符不同
+    2.BufferedReader中：
+        public String readLine(); 读取行文字，包含行的内容和字符串，不包含终止符，如果到了末尾，则为nul
+
+9、转换流：
+    转换流提供了在字节流和字符流之间的转换
+    Java API提供了两个转换流：
+         InputStreamReader ：将InputStream 转换为Reader
+         OutputStreamWriter ：将OutputStream转换为Writer
+     字节流中的数据都是字符时，转成字符流操作更高效。
+
+    ①InputStreamReader
+         实现将字节的输入流按指定字符集转换为字符的输入流。
+         构造器
+             public InputStreamReader(InputStream in)
+             public InputSreamReader(InputStream in,String charsetName)
+
+    ②OutputStreamWriter
+         实现将字符的输出流按指定字符集转换为字节的输出流。
+         构造器
+             public OutputStreamWriter(OutputStream out)
+             public OutputSreamWriter(OutputStream out,String charsetName)
+10、标准输入输出流：
+     System.in和System.out分别代表了系统标准的输入和输出设备
+     默认输入设备是：键盘，输出设备是：显示器
+     System.in的类型是InputStream
+     System.out的类型是PrintStream，其是OutputStream的子类FilterOutputStream 的子类
+     重定向：通过System类的setIn，setOut方法对默认设备进行改变。
+         public static void setIn(InputStream in)
+         public static void setOut(PrintStream out)
+
+11、打印流：
+    实现将 基本数据类型的数据格式转化为 字符串输出
+    打印流：PrintStream和PrintWriter
+         提供了一系列重载的print()和println()方法，用于多种数据类型的输出
+         PrintStream和PrintWriter的输出不会抛出IOException异常
+         PrintStream和PrintWriter有自动flush功能
+         PrintStream 打印的所有字符都使用平台的默认字符编码转换为字节。
+    在需要写入字符而不是写入字节的情况下，应该使用 PrintWriter 类。
+         System.out返回的是PrintStream的实例
+
+12、对象序列化机制：
+     对象序列化机制允许把内存中的Java对象转换成平台无关的二进制流，从而允许把这种二进制流持久地保存在磁盘上，
+    或通过网络将这种二进制流传输到另一个网络节点。//当其它程序获取了这种二进制流，就可以恢复成原来的Java对象
+    序列化的好处在于可将任何实现了Serializable接口的对象转化为 字节数据，使其在保存和传输时可被还原
+    序列化是 RMI（Remote Method Invoke – 远程方法调用）过程的参数和返回值都必须实现的机制，
+    而 RMI 是 JavaEE 的基础。因此序列化机制是JavaEE 平台的基础
+    如果需要让某个对象支持序列化机制，则必须让对象所属的类及其属性是可序列化的，为了让某个类是可序列化的，该类必须实现如下两个接口之一。
+    否则，会抛出NotSerializableException异常
+        Serializable
+        Externalizable
+
+13、对象流：
+     ObjectInputStream 和OjbectOutputSteam
+         用于存储和读取 基本数据类型数据或 对象的处理流。它的强大之处就是可以把Java中的对象写入到数据源中，也能把对象从数据源中还原回来。
+    序列化：用ObjectOutputStream类 保存基本类型数据或对象的机制
+    反序列化：用ObjectInputStream类 读取基本类型数据或对象的机制
+    ObjectOutputStream和ObjectInputStream不能序列化static和transient修饰的成员变量
+
+    对象的序列化：
+        凡是实现Serializable接口的类都有一个表示序列化版本标识符的静态变量：
+            private static final long serialVersionUID;
+            serialVersionUID用来表明类的不同版本间的兼容性。 简言之，其目的是以序列化对象进行版本控制，有关各版本反序列化时是否兼容。
+            如果类没有显示定义这个静态常量，它的值是Java运行时环境根据类的内部细节自动生成的。若类的实例变量做了修改，
+            serialVersionUID 可能发生变化。故建议，显式声明。
+         简单来说，Java的序列化机制是通过在运行时判断类的serialVersionUID来验证版本一致性的。在进行反序列化时，JVM会把传来的字节流中的
+        serialVersionUID与本地相应实体类的serialVersionUID进行比较，如果相同就认为是一致的，可以进行反序列化，否则就会出现序列化版本不一致的异
+        常。(InvalidCastException)
+
+    使用对象流序列化对象
+        若某个类实现了 Serializable 接口，该类的对象就是可序列化的：
+            创建一个 ObjectOutputStream
+            调用ObjectOutputStream  对象的 writeObject( 对象)  方法输出可 序列化对象
+            注意写出一次，操作flush() 一次
+        反序列化
+            创建一个 ObjectInputStream
+            调用readObject()  方法读取流中的对象
+         强调：如果某个类的属性不是基本数据类型或 String 类型，而是另一个引用类型，那么这个引用类型必须是可序列化的，否则拥有该类型的
+        Field 的类也不能序列化
+
+
+14、谈谈你对java.io.Serializable 接口的理解，我们知道它用于序列化，是空方法接口，还有其它认识吗？
+      实现了Serializable 接口的对象，可将它们转换成一系列字节，并可在以后完全恢复回原来的样子。 这一过程亦可通过网络进行。这意味着序列化机
+    制能自动补偿操作系统间的差异。在 换句话说，可以先在Windows 机器上创台 建一个对象，对其序列化，然后通过网络发给一台Unix 机器，然后在那里
+    准确无误地重新“装配”。不必关心数据在不同机器上如何表示，也不必关心字节的顺序或者其他任何细节。
+      由于大部分作为参数的类如String 、Integer 等都实现了
+    java.io.Serializable 的接口，也可以利用多态的性质，作为参数使接口更灵活。
