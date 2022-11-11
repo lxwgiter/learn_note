@@ -1,0 +1,40 @@
+实际敲代码发现的问题：
+        1、webapp没有蓝点
+            Project Structure ->Modules ->选中当前工程 ->点击"+"，加入Web并选中
+             ->在 Web Resource Directory中选中目标工程的web.xml文件
+        2、配置文件位置
+            在Maven中，例如jdbc.properties等配置文件，不再放到src目录下
+            而是放到resources目录下
+        3、浏览器清空缓存
+            快捷键：shift+ctrl+del
+        4、查看自己的ip地址
+            Windows下：ipconfig指令
+            Linux下：ifconfig指令
+        5、如何创建lib
+            Project Structure -> Libraries ->点击"+"，创建新的Lib(选择目标Lib，并命名) -> Modules ->
+            选中目标Modules -》Dependencies -》添加Lib依赖
+        6、绝对路径和base+相对路径还真就得二选一，主要是由于请求转发造成的
+            比如说注册不成功还需要转发到当前页面(但是地址栏是Servlet程序)，若是没有二选一，相对路径失效
+
+        7、js本地验证的精髓是return false，防止页面跳转，不再先发送到服务器，而是进行本地验证
+
+        8、jsp静态引用时，被引用页面只需写需要引用的代码即可，视为拼接。
+        9、web运行报错 illegal to have multiple occurrences of contentType with different
+                    values (old: text/html; charset=UTF-8, new: text/html; charset=utf-8)
+           原因是jsp静态引用时，两个页面的page指令不一致，这里是因为contentType="text/html;和charset=utf-8"之间多了一个空格
+
+           写每个模块的步骤：①写数据库中的表 ②写JavaBean ③写Dao(BaseDao+DaoInterface)->测试
+           ④写Service，并测试 ⑤写Servlet，配置监听，并测试
+        10、请求转发和请求重定向的路径区别：
+            ①请求转发的第一个"/"表示到工程名，映射到Web目录下
+            ②请求重定向的第一个"/"表示道端口名
+            所以请求重定向要在"/"前加上req.getContextPath(),才能映射到web目录下
+        11、实践过程中若出现乱码问题，在本页面搜索字符集，按照doPost和doGet请求的解决方式分别解决即可
+        12、a标签若是绑定servlet程序，点击默认调用doGet方法，且可以省略name和value属性
+            直接在href属性中写Servlet程序地址再加上参数"?action=...&属性名=属性值...";
+        13、req.getRequestDispatcher("参数")中的字符串参数可以用"/"代替当前工程,
+            resp.sendRedirect(“参数”)中的字符串参数没有此类功能，需要使用req.getContextPath()+"/"
+        14、目前的工程都是基于JavaEE8的，即Servlet使用的是javax包，而不是Jakarta包
+            若创建工程时选用了JavaEE9，则会默认导入Jakarta包，会报错
+        15、关于数据库事务性的代码，不要进行完全捕获，最后统一交给过滤器进行处理。
+        16、Filter的实现类中不仅要实现doFilter方法，还要实现init和destory方法，且后两个方法必须空实现，否则war包打包出错。

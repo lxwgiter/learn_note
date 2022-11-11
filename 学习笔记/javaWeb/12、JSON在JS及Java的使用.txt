@@ -1,0 +1,34 @@
+十三、JSON
+    1、什么是json？
+        JSON (JavaScript Object Notation) 是一种轻量级的数据交换格式。易于人阅读和编写。同时也易于机器解析和生成。JSON
+        采用完全独立于语言的文本格式，而且很多语言都提供了对 json 的支持（包括 C, C++, C#, Java, JavaScript, Perl, Python
+        等）。 这样就使得 JSON 成为理想的数据交换格式。
+    2、如何理解json？
+        ①json的本质是字符串，是各种语言和JavaScript进行数据交换的格式。
+        ②json的轻量级是指与xml做对比。
+        ③数据交换指的是客户端和服务器之间业务数据的传递格式。
+    3、json的书写格式
+        json 是由键值对组成，并且由花括号（大括号）包围。每个键由引号引起来，键和值之间使用冒号进行分隔，
+        多组键值对之间进行逗号进行分隔。
+    4、JavaScript中的json
+        var jsonObj = {"key1":12,"key2":"abc", "key3":true}
+        ①json在JavaScript中有两种存在形式即：json字符串和json对象。
+        ②在JavaScript中json声明为如上形式即是json对象，可以直接访问，如：jsonObj.key1//12
+        ③json对象可以嵌套
+        ④一般我们要操作 json 中的数据的时候，需要 json 对象的格式。
+         一般我们要在客户端和服务器之间进行数据交换的时候，使用 json 字符串。
+        ⑤两种形式的转化:
+            JSON.stringify()    把json对象转换成为 json 字符串
+            JSON.parse()        把json字符串转换成为 json 对象
+    5、Java中的json
+        Java并没有内置json数据格式，需要使用第三方jar，常用的为Goole的Gson，这里讲解Gson。
+        ①Gosn对象的创建
+            Gson gson=new Gson();
+        ②Gosn对象的两个重要方法：
+            gson.toJosn(Object)                         将Java对象转化为json字符串
+            gson.fromJson(jsonString,Class)             将json字符串解析为java对象
+        ③关于fromJsom方法：
+            若要解析为List集合:
+                gson.fromJson(jsonString,new TypeToken<List<T>>(){}.getType());
+            若要解析为Map集合：
+                gson.fromJson(jsonString, new TypeToken<Map<T,E>>(){}.getType());

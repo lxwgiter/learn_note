@@ -1,0 +1,67 @@
+二、XML部分：
+    1、 什么是 xml？
+        xml 是可扩展的标记性语言。
+    2、xml的作用？
+        ①、用来保存数据，而且这些数据具有自我描述性
+        ②、它还可以做为项目或者模块的配置文件
+        ③、还可以做为网络传输数据的格式（现在 JSON 为主）。
+    3、xml语法：
+        ①. 文档声明。
+            <?xml version="1.0" encoding="UTF-8"?> xml 声明。
+            <!-- xml 声明 version 是版本的意思 encoding 是编码 -->
+            而且这个<?xml 要连在一起写，否则会有报错
+            *属性
+            version 是版本号
+            encoding 是 xml 的文件编码
+            standalone="yes/no" 表示这个 xml 文件是否是独立的 xml 文件
+        ②. 元素（标签）
+            xml标签语法基本与html相同，主要有以下几个不同点：
+                所有xml标签必须闭合，否则报错。
+                xml标签对大小写敏感。
+                xml标签必须有自定义的根标签，且只能有唯一一个，这是后来DOM和Sax查询的关键。
+                xml标签属性值必须加引号，而html只有当属性值含有空格才必须加
+                xml标签名和属性名是自定义的，但是必须遵守命名规范
+        ③. xml 属性
+        ④. xml 注释
+            html 和 XML 注释 一样 : <!-- html 注释 -->
+        ⑤. 文本区域（CDATA 区）
+            xml中同样存在实体，不能正常的显示特殊字符。
+            CDATA 语法可以告诉 xml 解析器，我 CDATA 里的文本内容，只是纯文本，不需要 xml 语法解析
+            CDATA 格式：
+            <![CDATA[ 这里可以把你输入的字符原样显示，不会解析 xml ]]>
+    4、xml解析：
+        不管是 html 文件还是 xml 文件它们都是标记型文档，都可以使用 w3c 组织制定的 dom 技术来解析。
+        dom 解析技术是 W3C 组织制定的，而所有的编程语言都对这个解析技术使用了自己语言的特点进行实现。
+        意味着DOM也不是JS专属，java也提供了DOM的实现。
+        document 对象表示的是整个文档（可以是 html 文档，也可以是 xml 文档）
+        早期 JDK  为我们提供了两种 xml  解析技术 DOM 和 和 Sax  简介( 已经过时，但我们需要知道这两种技术)
+        但是！主流的是使用第三方jar包：
+        第三方的解析：
+        jdom 在 dom 基础上进行了封装 、
+        dom4j 又对 jdom 进行了封装。
+        pull 主要用在 Android 手机开发，是在跟 sax 非常类似都是事件机制解析 xml 文件。
+
+
+        dom4j解析技术：
+          由于 dom4j 它不是 sun 公司的技术，而属于第三方公司的技术，我们需要使用 dom4j 就需要到 dom4j 官网下载 dom4j
+        的 jar 包。
+        第一步，先创建 SaxReader  对象。这个对象，用于读取 xml  文件，并创建 Document
+                 SAXReader reader = new SAXReader();
+                 Document document = reader.read("src/books.xml");参数是输入流
+        第二步，通过 Document 对象。拿到 XML 的根元素对象
+                Element root = document.getRootElement();
+        第三步，通过根元素对象。获取所有的 book 标签对象
+                List<Element> books = root.elements("book");
+        第四步，遍历每个 book 标签对象。然后获取到 book 标签对象内的每一个元素
+                for (Element book : books) {
+                // 拿到 book 下面的 name 元素对象
+                Element nameElement = book.element("name");
+                // 拿到 book 下面的 price 元素对象
+                Element priceElement = book.element("price");
+                // 拿到 book 下面的 author 元素对象
+                Element authorElement = book.element("author");
+                // 再通过 getText() 方法拿到起始标签和结束标签之间的文本内容
+                System.out.println("书名" + nameElement.getText() + " , 价格:"
+                + priceElement.getText() + ", 作者：" + authorElement.getText());
+                }
+                }

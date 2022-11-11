@@ -1,0 +1,68 @@
+十二、Filter
+    1、什么是Filter？
+        ①Filter 过滤器它是 JavaWeb 的三大组件之一。三大组件分别是：Servlet 程序、Listener 监听器、Filter 过滤器
+        ②Filter 过滤器它是 JavaEE 的规范。也就是接口
+        ③Filter 过滤器它的作用是： 拦截请求，过滤响应。
+    2、常见的拦截场景？
+        ①权限检查
+        ②日记操作
+        ③事务管理  ……等等
+
+    3、Filter的使用？
+        ①编写一个类去实现 Filter 接口
+        ②实现过滤方法 doFilter()
+        ③到 web.xml 中去配置 Filter 的拦截路径
+    4、关于doFilter方法
+        doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
+        编写步骤：
+            ①需要将servletRequest类型转化为HttpServletRequest
+            ②进行条件判断：
+                满足条件进行请求转发或者重定向(放行)
+                不满足条件，执行filterChain的同名方法doFilter(servletRequest,servletResponse)。
+        FilterChain对象的doFilter方法：
+            ①按照web.xml中的Filter配置信息，执行下一个FiIter过滤器(如果有Filter)
+            ②执行目标资源(没有Filter)
+            ③当访问到尽头时，无论是否成功，都会原路返回，依次执行doFilter方法下的代码，这也是异常捕获要放到filterChain.doFilter之后的原因。
+            ④所有filter和目标资源默认都执行在同一个线程中
+            ⑤多个Filter共同执行的时候，它们都使用同一个Request对象。
+
+
+    5、web.xml中的配置
+        示例：
+            <filter>
+                <filter-name>AdminFilter</filter-name>
+                <filter-class>com.atguigu.filter.AdminFilter</filter-class>
+            </filter>
+            <filter-mapping>
+                <filter-name>AdminFilter</filter-name>
+                <url-pattern>/admin/*</url-pattern>
+                <url-pattern>*.html</url-pattern>
+            </filter-mapping>
+
+        匹配模式：
+        --精确匹配          /target.jsp
+            以上配置的路径，表示请求地址必须为：http://ip:port/工程路径/target.jsp
+        --目录匹配          /admin/*
+            以上配置的路径，表示请求地址必须为：http://ip:port/工程路径/admin/*
+        --后缀名匹配         *.html
+            以上配置的路径，表示请求地址必须以.html 结尾才会拦截到
+        注： ①<url-pattern>标签可以写多个。
+            ②只有后缀名匹配不是以斜线打头的。
+            ③Filter 过滤器它只关心请求的地址是否匹配，不关心请求的资源是否存在。
+
+    6、Filter的生命周期：
+            ①构造器方法
+            ②init 初始化方法
+            ③doFilter 过滤方法
+            ④destroy 销毁
+                第 1，2 步，在 web 工程启动的时候执行（Filter 已经创建）
+                第 3 步，每次拦截到请求，就会执行
+                第 4 步，停止 web 工程的时候，就会执行（停止 web 工程，也会销毁 Filter 过滤器）
+
+    7、FilterConfig类
+        FilterConfig 类见名知义，它是 Filter 过滤器的配置文件类。
+        Tomcat 每次创建 Filter 的时候，也会同时创建一个 FilterConfig 类，这里包含了 Filter 配置文件的配置信息。
+        FilterConfig 类的作用是获取 filter 过滤器的配置内容：
+            ①获取 Filter 的名称 filter-name 的内容
+            ②获取在 Filter 中配置的 init-param 初始化参数
+            ③获取 ServletContext 对象

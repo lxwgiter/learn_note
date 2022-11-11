@@ -1,0 +1,59 @@
+十四、AJAX请求
+    1、什么是AJAX请求？
+        ①AJAX 即“Asynchronous Javascript And XML”（异步 JavaScript 和 XML），是指一种创建交互式网页应用的网页开发技术。
+        ②AJAX 是一种浏览器通过 js 异步发起请求，局部更新页面的技术。
+    2、AJAX两个特性的理解：
+        ①异步：
+            同步的请求类似单线程，当请求没有得到响应时，线程阻塞。
+            而异步请求，不等响应，页面会接着解析，得到响应后再处理结果。
+        ②局部更新：
+            浏览器地址栏不会发生变化，局部更新不会舍弃原来页面的内容。
+            此前的所有页面更新都是重新发起请求，返回整个网页。
+    3、JavaScript原生的AJAX请求
+        function ajaxRequest() {
+            var xmlhttprequest = new XMLHttpRequest();
+            xmlhttprequest.open("GET","http://localhost:8080/16_json_ajax_i18n/ajaxServlet?action=javaScriptAjax",true)
+            xmlhttprequest.onreadystatechange = function(){
+                if (xmlhttprequest.readyState == 4 && xmlhttprequest.status == 200) {
+                var jsonObj = JSON.parse(xmlhttprequest.responseText);
+                document.getElementById("div01").innerHTML = " 编号：" + jsonObj.id + " ,  姓名：" +jsonObj.name;
+                }
+            }
+            xmlhttprequest.send();
+        }
+    4、对原生AJAX的理解：
+        ①主要操作步骤为：创建XMLHttpRequest对象、调用open方法、设置回调函数、调用send方法。
+        ②XMLHttpRequest对象，是整个AJAX的基础。
+        ③open方法：open(method,url,async)   规定请求的类型、URL 以及是否异步处理请求。
+                •method：请求的类型；GET 或 POST
+                •url：文件在服务器上的位置
+                •async：true（异步）或 false（同步）
+        ④send方法：send() 将请求发送到服务器。
+        ⑤接收服务器响应：responseText 或 responseXML 属性
+            responseText    获得字符串形式的响应数据。
+            responseXML     获得 XML 形式的响应数据。
+            服务器的响应使用resp.getWriter().wrtier(响应内容)传回。
+        ⑥onreadystatechange事件：
+            readyState 属性存有 XMLHttpRequest 的状态信息。
+            每当 readyState 改变时，就会触发 onreadystatechange 事件。
+            当 readyState 等于 4 且状态为 200 时，表示响应已就绪。
+            在设置该事件的回调函数时，就可以根据上述情况进行判断。
+
+    5、jQuery中的AJAX
+        ①$.ajax方法：
+            $.ajax({
+                url:...,              //表示请求的地址
+                type:...,            //表示请求的类型 GET 或 POST 请求
+                data:...,             //表示发送给服务器的数据(name=value&name=value)/({key:value})
+                success:...,         //请求成功，响应的回调函数
+                dataType:...        //响应的数据类型(text/xml/json)
+            });
+
+        ②$.get 方法和$.post 方法
+            书写格式：
+            $.get(url,data,callback,dataType);
+            $.post(url,data,callback,dataType);
+        ③$.getJSON 方法
+            $.getJSON(url,data,callback)
+    6、表单序列化 serialize()
+        表单的JQuery对象有serialize()方法，serialize()可以把表单中所有表单项的内容都获取到，并以 name=value&name=value 的形式进行拼接。

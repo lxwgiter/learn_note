@@ -1,0 +1,129 @@
+1、PreparedStatement介绍
+    ●▶可以通过调用 Connection 对象的 preparedStatement(String sql) 方法获取 PreparedStatement 对象
+    ●PreparedStatement 接口是 Statement 的子接口，它表示一条预编译过的 SQL 语句
+    ●PreparedStatement 对象所代表的 SQL 语句中的参数用问号(?)来表示，调用 PreparedStatement 对象的
+    setXxx() 方法来设置这些参数. setXxx() 方法有两个参数，第一个参数是要设置的 SQL 语句中的参数的索引(从 1
+    开始)，第二个是设置的 SQL 语句中的参数的值
+2、PreparedStatement的优势
+    ●代码的可读性和可维护性。
+    ●PreparedStatement 能最大可能提高性能：
+        DBServer会对预编译语句提供性能优化。因为预编译语句有可能被重复调用，所以语句在被DBServer的编译器编译后的执行代码被缓存下来，
+    ●PreparedStatement 可以防止 SQL 注入
+3、PreparedStatement提供的方法
+    ●int execute()
+    ●ResultSet executeQuery()
+4、PreparedStatement注意：
+    PreparedStatement对象属于手动关闭资源。
+5、PreparedStatement增删改示例：
+	public void update(String sql,Object ...args){//sql中占位符的个数与可变形参的长度相同！
+		Connection conn = null;
+		PreparedStatement ps = null;
+		try {
+			//1.获取数据库的连接
+			conn = JDBCUtils.getConnection();
+			//2.预编译sql语句，返回PreparedStatement的实例
+			ps = conn.prepareStatement(sql);
+			//3.填充占位符
+			for(int i = 0;i < args.length;i++){
+				ps.setObject(i + 1, args[i]);//小心参数声明错误！！
+			}
+			//4.执行
+			ps.execute();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally{
+			//5.资源的关闭
+			JDBCUtils.closeResource(conn, ps);
+		}
+	}
+
+6、PreparedStatement查单个对象示例
+	public <T> T getInstance(Class<T> clazz,String sql, Object... args) {
+		Connection conn = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try {
+			conn = JDBCUtils.getConnection();
+
+			ps = conn.prepareStatement(sql);
+			for (int i = 0; i < args.length; i++) {
+				ps.setObject(i + 1, args[i]);
+			}
+
+			rs = ps.executeQuery();
+			// 获取结果集的元数据 :ResultSetMetaData
+			ResultSetMetaData rsmd = rs.getMetaData();
+			// 通过ResultSetMetaData获取结果集中的列数
+			int columnCount = rsmd.getColumnCount();
+
+			if (rs.next()) {
+				//实例化要返回的对象的时候决定了需要使用泛型+反射，体现动态性
+				T t = clazz.newInstance();
+				// 处理结果集一行数据中的每一个列
+				for (int i = 0; i < columnCount; i++) {
+					// 获取列值
+					Object columValue = rs.getObject(i + 1);
+
+					// 获取每个列的列名
+					String columnLabel = rsmd.getColumnLabel(i + 1);
+
+					// 给t对象指定的columnName属性，赋值为columValue：通过反射
+					Field field = clazz.getDeclaredField(columnLabel);
+					field.setAccessible(true);
+					field.set(t, columValue);
+				}
+				return t;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			JDBCUtils.closeResource(conn, ps, rs);
+		}
+		return null;
+	}
+
+7、PreparedStatement查多个对象示例
+	public <T> List<T> getForList(Class<T> clazz,String sql, Object... args){
+		Connection conn = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try {
+			conn = JDBCUtils.getConnection();
+
+			ps = conn.prepareStatement(sql);
+			for (int i = 0; i < args.length; i++) {
+				ps.setObject(i + 1, args[i]);
+			}
+
+			rs = ps.executeQuery();
+			// 获取结果集的元数据 :ResultSetMetaData
+			ResultSetMetaData rsmd = rs.getMetaData();
+			// 通过ResultSetMetaData获取结果集中的列数
+			int columnCount = rsmd.getColumnCount();
+			//创建集合对象
+			ArrayList<T> list = new ArrayList<T>();
+			while (rs.next()) {
+				T t = clazz.newInstance();
+				// 处理结果集一行数据中的每一个列:给t对象指定的属性赋值
+				for (int i = 0; i < columnCount; i++) {
+					// 获取列值
+					Object columValue = rs.getObject(i + 1);
+
+					// 获取每个列的列名
+					String columnLabel = rsmd.getColumnLabel(i + 1);
+
+					// 给t对象指定的columnName属性，赋值为columValue：通过反射
+					Field field = clazz.getDeclaredField(columnLabel);
+					field.setAccessible(true);
+					field.set(t, columValue);
+				}
+				list.add(t);
+			}
+			return list;
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			JDBCUtils.closeResource(conn, ps, rs);
+		}
+		return null;
+	}

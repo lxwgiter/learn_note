@@ -1,0 +1,31 @@
+三、Tomcat部分：
+	①简单介绍
+	  Tomcat需要与jdk版本兼容，jdk8需要用Tomcat8，版本不能太高。
+	  Tomcat本身也是用java和c写的项目，依赖于jdk，Tomcat的可执行文件是startup.bat
+	要想执行该文件需要配置jdk到环境变量中。由于idea可以自动启动Tomcat，所以不需要在
+	做这个步骤。
+	  Tomcat默认的端口号是8080
+	  当Tomcat启动后我们可以通过http://localhost:8080/访问到Tomcat的主页面
+	②目录介绍
+        bin 专门用来存放 Tomcat 服务器的可执行程序
+        conf 专门用来存放 Tomcat 服务器的配置文件
+        lib 专门用来存放 Tomcat 服务器的 jar 包
+        logs 专门用来存放 Tomcat 服务器运行时输出的日记信息
+        temp 专门用来存放 Tomcat 运行时产生的临时数据
+        webapps 专门用来存放部署的 Web 工程。
+        work 是 Tomcat 工作时的目录，用来存放 Tomcat 运行时 jsp 翻译为 Servlet 的源码，和 Session 钝化的目录。
+	③简单应用
+	  我们可以把项目新建在tomcat/webapps文件夹下，当运行tomcat时，便把项目部署到服务器上
+	然后可以通过URL访问访问到该项目。----》http://ip:port/工程名/目录下/文件名
+	④IDEA部署Tomcat：
+	  参照视频P20、CSDNJavaWeb收藏夹《IDEA ERROR》。
+	  整体步骤，新建项目-》右键Add Frameworks Support-》web application-》
+	  --》右上角配置Tomcat。。。。
+	  注意点：文件应写在web文件夹下，而不是WEN-INF文件夹下！
+	 ⑤有些java类不在jdk中，需要添加Tomcat依赖
+	 ⑥Tomcat的默认访问
+	    1、若只输入ip(域名)，不输入端口号，则默认访问的端口号为80，如www.baidu.com等价于www.baidu.com:80
+	    2.若不输入工程名，则默认访问ROOT工程，如http://ip:port/等价于http://ip:port/ROOT
+	    3、若不输入资源名，则默认访问index.html，如http://ip:port/工程名/等价于http://ip:port/工程名/index.html
+	    注：那么www.baidu.com是否等价于www.baidu.com:80/ROOT/index.html,经测试不可行，为什么？
+	 ⑦IDEA配置Tomcat见pdf

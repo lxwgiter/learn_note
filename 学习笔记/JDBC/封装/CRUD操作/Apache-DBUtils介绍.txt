@@ -1,0 +1,63 @@
+1、Apache-DBUtils简介
+    ●commons-dbutils 是 Apache 组织提供的一个开源 JDBC工具类库，它是对JDBC的简单封装，学习成本极低，
+    并且使用dbutils能极大简化jdbc编码的工作量，同时也不会影响程序的性能。
+    ●API介绍：
+        ▶org.apache.commons.dbutils.QueryRunner
+            QueryRunner,提供数据库操=作的一.系列重载的update()和=query()操作
+        ▶org.apache.commons.dbutils.ResultSetHandler
+            此接口用于处理数据库查询操作得到的结果集。不同的结果集的情形，由其不同的子类来实现
+        ▶工具类：org.apache.commons.dbutils.DbUtils
+
+2、主要API的使用
+    ●DbUtils：
+    提供如关闭连接、装载JDBC驱动程序等常规工作的工具类，里面的所有方法都是静态的。主要方法如下：
+        ▶public static void close(…) throws java.sql.SQLException：
+            DbUtils类提供了三个重载的关闭方法。这些方法检查所提供的参数是不是NULL，如果不是的话，它们就关闭Connection、Statement和ResultSet。
+        ▶public static void closeQuietly(…):
+            这一类方法不仅能在Connection、Statement和ResultSet为NULL情况下避免关闭，还能隐藏一些在程序中抛出的SQLEeception。
+        ▶public static void commitAndClose(Connection conn)throws SQLException：
+            用来提交连接的事务， 然后关闭连接
+        ▶public static void commitAndCloseQuietly(Connection conn)：
+            用来提交连接，然后关闭连接，并且在关闭连接时不抛出SQL异常。
+        ▶public static void rollback(Connection conn)throws SQLException：
+            允许conn为null，因为方法内部做了判断
+        ▶public static void rollbackAndClose(Connection conn)throws SQLException
+        ▶rollbackAndCloseQuietly(Connection)
+
+    ●QueryRunner类：
+    该类简单化了SQL查询，它与ResultSetHandler组合在一起使用可以完成大部分的数据库操作，能够大大减少编码量。
+        ▶更新：
+            public int update(Connection conn, String sql, Object... params) throws SQLException:
+            用来执行一个更新（插入、更新或删除）操作。
+        ▶批处理
+            public int[] batch(Connection conn,String sql,Object[][] params)throws SQLException： INSERT,UPDATE, or DELETE语句
+            public T insertBatch(Connection conn,String sql,ResultSetHandler rsh,Object[][] params)throws SQLException：只支持INSERT语句
+        ▶查询
+            public Object query(Connection conn, String sql, ResultSetHandler rsh,Object... params) throwsSQLException：
+            执行一个查询操作，在这个查询中，对象数组中的每个元素值被用来作为查询语句的置换参数。该方法会自行处理
+            PreparedStatement 和 ResultSet 的创建和关闭。
+
+    ●ResultSetHandler接口及实现类
+    该接口用于处理 java.sql.ResultSet，将数据按要求转换为另一种形式。
+    ResultSetHandler 接口提供了一个单独的方法：Object handle (java.sql.ResultSet .rs)。
+    接口的主要实现类：
+        ▶BeanHandler：将结果集中的第一行数据封装到一个对应的JavaBean实例中。
+        ▶BeanListHandler：将结果集中的每一行数据都封装到一个对应的JavaBean实例中，存放到List里。
+        ▶MapHandler：将结果集中的第一行数据封装到一个Map里，key是列名，value就是对应的值。
+        ▶MapListHandler：将结果集中的每一行数据都封装到一个Map里，然后再存放到List
+        ▶ScalarHandler：查询单个值对象
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

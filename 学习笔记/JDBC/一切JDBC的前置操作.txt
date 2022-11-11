@@ -1,0 +1,11 @@
+1、导入MySQL提供的驱动(jar)
+	Driver接口由jdk提供，实现类在驱动中实现。
+	DriverManager类由jdk提供实现，对不同驱动进行统一管理。
+2、提供jdbc.properties文件，其内容为：
+	username=root
+	password=abc123
+	url=jdbc:mysql://localhost:3306/book
+	driverClassName=com.mysql.cj.jdbc.Driver
+	initialSize=5
+	maxActive=10
+	//有些情况下url需要加上时区

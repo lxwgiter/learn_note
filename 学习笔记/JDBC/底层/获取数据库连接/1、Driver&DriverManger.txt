@@ -1,0 +1,28 @@
+1、 Driver接口介绍
+	●java.sql.Driver 接口是所有 JDBC 驱动程序需要实现的接口。这个接口是提供给数据库厂商使用的，不同数据库
+	厂商提供不同的实现。
+	●在程序中不需要直接去访问实现了 Driver 接口的类，而是由驱动程序管理器类(java.sql.DriverManager)去调用
+	这些Driver实现。
+2、加载与注册JDBC驱动
+	●加载驱动：加载 JDBC 驱动需调用 Class 类的静态方法 forName()，向其传递要加载的 JDBC 驱动的类名
+	Class.forName(“com.mysql.jdbc.Driver”);
+	●注册驱动：DriverManager 类是驱动程序管理器类，负责管理驱动程序
+		▶使用DriverManager.registerDriver(com.mysql.jdbc.Driver)来注册驱动
+		▶通常不用显式调用 DriverManager 类的 registerDriver() 方法来注册驱动程序类的实例，因为 Driver 接口
+		的驱动程序类都包含了静态代码块，在这个静态代码块中，会调用 DriverManager.registerDriver() 方法来注册自身的一个实例。
+
+	public class Driver extends NonRegisteringDriver implements java.sql.Driver {
+    		public Driver() throws SQLException {
+    		}
+
+    		static {
+        		try {
+            	DriverManager.registerDriver(new Driver());
+        		} catch (SQLException var1) {
+            	throw new RuntimeException("Can't register driver!");
+        		}
+    		}
+	}
+3、实际操作：
+	综上，其实只需显式调用Class.forName(“com.mysql.jdbc.Driver”);
+	即可完成驱动的加载和注册！

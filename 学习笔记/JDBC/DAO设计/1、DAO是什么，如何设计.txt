@@ -1,0 +1,10 @@
+1、DAO
+    ●DAO：Data Access Object访问数据信息的类和接口，包括了对数据的CRUD（Create、Retrival、Update、Delete），
+    而不包含任何业务相关的信息。有时也称作：BaseDAO
+    ●作用：为了实现功能的模块化，更有利于代码的维护和升级。
+2、设计方式
+    ①先写出抽象父类BaseDAO，并且尽量使BaseDao使用泛型，增强通用性。
+    ②设计子DAO的接口，在接口中先定义要实现的CRUD方法。
+    ③设计子DAO的实现类DAOImpl，要求继承BaseDAO、实现子DAO接口
+3、异常处理
+    在所有异常在实现类中均不做捕获，而是在BaseDAO中捕获，并且不可以完全解决异常，要继续上抛，确保事务的原子性
