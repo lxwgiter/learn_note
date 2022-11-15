@@ -1,0 +1,11 @@
+1、问题的提出：
+    我们有JavaBean对象，有数据库表，但是Java属性的命名规则(驼峰命名法)和数据库表的字段命名规则不相同(下划线分割)
+    那么在QueryRunner类执行query方法时如何实现数据库表记录自动转换为JavaBean？
+2、QueryRunner类的query方法
+    query提供了多种重载，无一例外的时他能将查询到的数据表记录转换成JavaBean，其底层使用的是反射
+    通过反射获取查询到的字段名，再通过利用反射获取JavaBean对象和字段名同名的属性，利用setXXX方法进行赋值
+    简略实现如E:\BaiduNetdiskDownload\学习笔记\JDBC\底层\CRUD操作\使用PreparedStatement
+3、当再JavaBean中找不到字段名同名属性时，无法完成赋值，所有当JavaBean对象的属性出现null时，
+    极有可能是这种情况造成的。
+4、如何解决？
+    我们可以通过改写sql语句解决，在编写sql语句时，为查询结果起别名，让字段别名与JavaBean一致即可。

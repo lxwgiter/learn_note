@@ -1,0 +1,14 @@
+1、正向工程：先创建Java实体类，由框架负责根据实体类生成数据库表。 Hibernate是支持正向工程的。
+2、逆向工程：先创建数据库表，由框架负责根据数据库表，反向生成如下资源：
+    ●Java实体类
+    ●Mapper接口
+    ●Mapper映射文件
+3、逆向工程的作用
+    根据数据库表直接生成Mapper接口、pojo、映射文件，提供了完整的CRUD方法。
+4、逆向工程分类
+    分为Simple版和奢华版。
+    却别在于Simple版仅仅提供了简单的CRUD四个方法
+    而奢华版提供了所有jdbc能做到的CRUD
+    设置方法：generatorConfig.xml-》<context>标签   -》  targetRuntime="MyBatis3/MyBatis3Simple"
+5、生成方式
+    ●点击右侧Maven，找到逆向工程模块，-》插件-》mybatis-generator-》generator

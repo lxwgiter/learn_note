@@ -1,0 +1,19 @@
+1、问题引入
+    ●当查询结果为多条表记录时，<select>标签中的resultType属性一定不能设置为某个实体类
+    否则会抛出异常TooManyResultsException。
+
+2、若sql语句查询的结果为1条时，此时可以使用实体类类型或list集合类型作为方法的返回值。
+        如：●当返回值为一条记录时，可以用某实体类型接收(resultType="User")
+            也可以用集合接受(resultType="User")
+
+                <!--User getUserById(@Param("id") Integer id);-->
+                <select id="getUserById" resultType="User">
+                    select * from t_user where id = #{id}
+                </select>
+
+           ●当返回值类型为多条记录时，必须用集合类型接受，但是(resultType="User")，框架自动装入集合。
+
+                    <!--List<User> getAllUser();-->
+                    <select id="getAllUser" resultType="User">
+                        select * from t_user
+                    </select>

@@ -1,0 +1,72 @@
+1、什么是第三方缓存
+    mybatis已经为我们提供了缓存的实现，不过我们仍可以自己使用第三方缓存
+实现步骤如下：
+①添加依赖
+    <!-- Mybatis EHCache整合包 -->
+    <dependency>
+        <groupId>org.mybatis.caches</groupId>
+        <artifactId>mybatis-ehcache</artifactId>
+        <version>1.2.1</version>
+    </dependency>
+
+    <!-- slf4j日志门面的一个具体实现 -->
+    <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>1.2.3</version>
+    </dependency>
+
+②创建EHCache的配置文件ehcache.xml
+    <?xml version="1.0" encoding="utf-8" ?>
+    <ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../config/ehcache.xsd">
+        <!-- 磁盘保存路径 -->
+        <diskStore path="磁盘保存路径"/>
+        <defaultCache
+            maxElementsInMemory="1000"
+            maxElementsOnDisk="10000000"
+            eternal="false"
+            overflowToDisk="true"
+            timeToIdleSeconds="120"
+            timeToLiveSeconds="120"
+            diskExpiryThreadIntervalSeconds="120"
+            memoryStoreEvictionPolicy="LRU">
+        </defaultCache>
+    </ehcache>
+
+③在映射文件中设置二级缓存的类型
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+
+④加入logback日志
+    存在SLF4J时，作为简易日志的log4j将失效，此时我们需要借助SLF4J的具体实现logback来打印日
+    志。 创建logback的配置文件logback.xml
+
+    <?xml version="1.0" encoding="UTF-8"?>
+    <configuration debug="true">
+        <!-- 指定日志输出的位置 -->
+        <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <!-- 日志输出的格式 -->
+                <!-- 按照顺序分别是： 时间、日志级别、线程名称、打印日志的类、日志主体内容、换行
+    -->
+                    <pattern>[%d{HH:mm:ss.SSS}] [%-5level] [%thread] [%logger]
+    [%msg]%n</pattern>
+                </encoder>
+            </appender>
+            <!-- 设置全局日志级别。日志级别按顺序分别是： DEBUG、INFO、WARN、ERROR -->
+            <!-- 指定任何一个日志级别都只打印当前级别和后面级别的日志。 -->
+            <root level="DEBUG">
+                <!-- 指定打印日志的appender，这里通过“STDOUT”引用了前面配置的appender -->
+                <appender-ref ref="STDOUT" />
+            </root>
+            <!-- 根据特殊需求指定局部日志级别 -->
+            <logger name="映射文件所在目录" level="DEBUG"/>
+    </configuration>
+
+
+
+
+
+
+
+

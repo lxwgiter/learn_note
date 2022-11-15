@@ -1,0 +1,178 @@
+1、引入：
+    JavaBean中属性要求和数据库表中字段名一致，否则无法映射
+2、JDBC中的解决方案：
+    通过SQL语句，给查询到的字段起别名。
+3、mybatis中的解决方案:
+    ●mybatis-config.xml中引入全局配置：
+        <settings>
+            <!--自动映射：将下划线映射为驼峰-->
+            <setting name="mapUnderscoreToCamelCase" value="true"/>
+        <settings>
+    注：仅适用于JavaBean和数据库表都遵从命名规则！
+
+4、使用resultMap自定义映射处理
+    ●处理多对一的映射关系：
+        ①级联方式处理
+        ②association
+        ③分步查询
+    ●处理一对多的映射关系：
+        ①collection
+        ②分步查询
+5、resultMap标签;
+        resultMap：设置自定义的映射关系
+            id：唯一标识
+            type：处理映射关系的实体类的类型
+        常用的标签：
+        id：处理主键和实体类中属性的映射关系
+        result：处理普通字段和实体类中属性的映射关系
+        association：处理多对一的映射关系（处理实体类类型的属性）
+        collection：处理一对多的映射关系（处理集合类型的属性）
+            column：设置映射关系中的字段名，必须是sql查询出的某个字段
+            property：设置映射关系中的属性的属性名，必须是处理的实体类类型中的属性名
+
+6、处理多对一的映射关系：
+    什么是多对一的映射关系？
+        如员工表对应的实体类，具有部门属性。使用多表查询时，需要利用多条数据给一个对象的一个部门属性赋值。
+    ①级联方式处理：
+            Emp getEmpAndDeptByEmpId(@Param("empId") Integer empId);
+            <select id="getEmpAndDeptByEmpId" resultMap="empAndDeptResultMap">
+                select
+                t_emp.*,t_dept.*
+                from t_emp
+                left join t_dept
+                on t_emp.dept_id = t_dept.dept_id
+                where t_emp.emp_id = #{empId}
+            </select>
+
+            <resultMap id="empAndDeptResultMap" type="Emp">
+                <id column="emp_id" property="empId"></id>
+                <result column="emp_name" property="empName"></result>
+                <result column="age" property="age"></result>
+                <result column="gender" property="gender"></result>
+                <result column="dept_id" property="dept.deptId"></result>
+                <result column="dept_name" property="dept.deptName"></result>
+            </resultMap>
+
+    ②association方式处理：
+            <resultMap id="empAndDeptResultMap" type="Emp">
+                <id column="emp_id" property="empId"></id>
+                <result column="emp_name" property="empName"></result>
+                <result column="age" property="age"></result>
+                <result column="gender" property="gender"></result>
+                <!--
+                    association：处理多对一的映射关系（处理实体类类型的属性）
+                    property：设置需要处理映射关系的属性的属性名
+                    javaType：设置要处理的属性的类型
+                -->
+                <association property="dept" javaType="Dept">
+                    <id column="dept_id" property="deptId"></id>
+                    <result column="dept_name" property="deptName"></result>
+                </association>
+            </resultMap>
+
+    ③分步查询：
+        Emp getEmpAndDeptByStepOne(@Param("empId") Integer empId);
+        <select id="getEmpAndDeptByStepOne" resultMap="empAndDeptByStepResultMap">
+            select * from t_emp where emp_id = #{empId}
+        </select>
+
+
+        <resultMap id="empAndDeptByStepResultMap" type="Emp">
+            <id column="emp_id" property="empId"></id>
+            <result column="emp_name" property="empName"></result>
+            <result column="age" property="age"></result>
+            <result column="gender" property="gender"></result>
+            <!--
+                property：设置需要处理映射关系的属性的属性名
+                select：设置分步查询的sql的唯一标识
+                column：将查询出的某个字段作为分步查询的sql的条件
+                fetchType：在开启了延迟加载的环境中，通过该属性设置当前的分步查询是否使用延迟加载
+                fetchType="eager(立即加载)|lazy(延迟加载)"
+            -->
+            <association property="dept" fetchType="eager"
+                         select="SQL唯一标识"
+                         column="dept_id"></association>
+        </resultMap>
+
+         <!--Dept getEmpAndDeptByStepTwo(@Param("deptId") Integer deptId);-->
+         <select id="getEmpAndDeptByStepTwo" resultType="Dept">
+             select * from t_dept where dept_id = #{deptId}
+         </select>
+
+7、处理一对多的映射关系：
+    什么是一对多的映射关系：
+        部门表中有属性List<Emp> emps;，给emps赋值的过程叫做一对多
+
+   ①collection
+
+       <resultMap id="deptAndEmpResultMap" type="Dept">
+           <id column="dept_id" property="deptId"></id>
+           <result column="dept_name" property="deptName"></result>
+           <!--
+               ofType：设置集合类型的属性中存储的数据的类型
+           -->
+           <collection property="emps" ofType="Emp">
+               <id column="emp_id" property="empId"></id>
+               <result column="emp_name" property="empName"></result>
+               <result column="age" property="age"></result>
+               <result column="gender" property="gender"></result>
+           </collection>
+       </resultMap>
+
+       Dept getDeptAndEmpByDeptId(@Param("deptId") Integer deptId);
+       <select id="getDeptAndEmpByDeptId" resultMap="deptAndEmpResultMap">
+           SELECT *
+           FROM t_dept
+           LEFT JOIN t_emp
+           ON t_dept.dept_id = t_emp.dept_id
+           WHERE t_dept.dept_id = #{deptId}
+       </select>
+
+    ②分步查询
+            <resultMap id="deptAndEmpResultMapByStep" type="Dept">
+                <id column="dept_id" property="deptId"></id>
+                <result column="dept_name" property="deptName"></result>
+                <collection property="emps"
+                            select="com.lxw.mybatis.mapper.EmpMapper.getDeptAndEmpByStepTwo"
+                            column="dept_id"></collection>
+            </resultMap>
+
+            <Dept getDeptAndEmpByStepOne(@Param("deptId") Integer deptId);
+            <select id="getDeptAndEmpByStepOne" resultMap="deptAndEmpResultMapByStep">
+                select * from t_dept where dept_id = #{deptId}
+            </select>
+
+            <!--List<Emp> getDeptAndEmpByStepTwo(@Param("deptId") Integer deptId);-->
+            <select id="getDeptAndEmpByStepTwo" resultType="Emp">
+                select * from t_emp where dept_id = #{deptId}
+            </select>
+
+
+
+
+
+
+
+
+
+
+
+
+
+8、分步查询的延迟加载：
+    需要在mybatis-config.xml中配置全局环境：
+        <settings>
+            <!--将下划线映射为驼峰-->
+            <setting name="mapUnderscoreToCamelCase" value="true"/>
+            <!--开启延迟加载-->
+            <setting name="lazyLoadingEnabled" value="true"/>
+            <!--按需加载-->
+            <setting name="aggressiveLazyLoading" value="false"/>
+        </settings>
+
+
+
+
+
+
+

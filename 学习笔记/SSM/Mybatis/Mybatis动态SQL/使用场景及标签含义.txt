@@ -1,0 +1,61 @@
+1、什么是动态SQL？
+    Mybatis框架的动态SQL技术是一种根据特定条件动态拼装SQL语句的功能，它存在的意义是为了
+    解决 拼接SQL语句字符串时的痛点问题。
+2、什么情况下使用动态SQL？
+    当CRUD条件时动态变化时，要求对应的SQL语句也必须动态变化。如：
+    ●网页中有复选框，通过选中的一个或多个条件，进行查询。
+    ●批量添加数据时，不确定数据的添加条数
+    ●批量删除时，不确定删除的条件
+3、mybatis为我们提供的可用标签
+    注：要写在对应的映射文件的insert、delete、select、update标签中
+    ●if标签：
+        if标签可通过test属性的表达式进行判断，若表达式的结果为true，则标签中的内容会执行；反之标签中的内容不会执行
+    ●where标签：
+        where和if一般结合使用：
+        >若where标签中的if条件都不满足，则where标签没有任何功能，即不会添加where关键字
+        >若where标签中的if条件满足，则where标签会自动添加where关键字，并将条件最前方多余的and去掉
+        注意：where标签不能去掉条件最后多余的and
+    ●trim标签：
+        trim用于去掉或添加标签中的内容
+        常用属性：
+        >prefix：在trim标签中的内容的前面添加某些内容
+        >prefixOverrides：在trim标签中的内容的前面去掉某些内容
+        >suffix：在trim标签中的内容的后面添加某些内容
+        >suffixOverrides：在trim标签中的内容的后面去掉某些内容
+    ●choose、when、otherwise标签
+        相当于if...else if..else，与if标签的区别是该标签组是多选一
+    ●foreach标签：
+        进行遍历，常用于批量操作
+        >collection属性：指定需要遍历的集合(一般在接口中使用@param指定参数名)
+        >item属性：规定每轮遍历时的对象名
+        >separator属性：指定分隔符
+    ●sql标签
+        sql片段，可以记录一段公共sql片段，在使用的地方通过include标签进行引入
+        属性：id，作为唯一标识
+    ●include标签：
+        引入片段
+        属性：refid    属性值为被引入的标签的id
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

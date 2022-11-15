@@ -1,0 +1,37 @@
+1、引入：
+    有些情况下，并不是查询到的结果就一定有相对应的实体类，我们可以通过把查询到的字段名和值
+    以Map的形式进行封装后返回。
+2、模拟单条记录没有对应的实体类
+
+        <!--Map<String, Object> getUserByIdToMap(@Param("id") Integer id);-->
+        <select id="getUserByIdToMap" resultType="map">
+            select * from t_user where id = #{id}
+        </select>
+        注：这时候返回的结果并不是User对象，而是一个map对象，输出信息如下：
+            {password=123456, gender=男, id=1, age=23, email=12345@qq.com, username=admin}
+3、模拟多条记录没有对应的实体类
+    解决方式分为以下两种：
+        ●将mapper接口方法的返回值设置为泛型是map的list集合
+        ▶Mapper接口中的声明：
+            List<Map<String, Object>> getAllUserToMap();
+        ▶映射文件中的声明
+            <select id="getAllUserToMap" resultType="map">
+                select * from t_user
+            </select>
+        ▶返回的结果如下：
+            {password=123456, gender=男, id=1, age=23, email=12345@qq.com, username=admin},{password=123456, gender=男, id=1, age=23, email=12345@qq.com, username=admin}
+        ●可以将每条数据转换的map集合放在一个大的map中，但是必须要通过@MapKey注解
+            ▶Mapper接口中的声明：
+                @MapKey("id")
+                Map<String, Object> getAllUserToMap();
+            ▶映射文件中的声明
+                <select id="getAllUserToMap" resultType="map">
+                    select * from t_user
+                </select>
+            ▶结果：
+                {
+                 1={password=123456, gender=男, id=1, age=23, email=12345@qq.com, username=admin},
+                 2={password=123, gender=男, id=2, age=23, email=12345@qq.com, username=zhangsan},
+                 3={password=123456, gender=女, id=3, age=33, email=123@qq.com, username=root},
+                 4={password=123, id=4, username=lisi}
+                 }

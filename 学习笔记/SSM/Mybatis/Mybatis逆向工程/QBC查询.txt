@@ -1,0 +1,39 @@
+1、什么是QBC查询
+    QBC查询：Query By Criteria，条件查询。是一种更加面向对象化的查询的方式
+2、逆向工程的奢华版为我们提供了QBC查询的功能
+3、自动生成的Mapper接口中的方法：
+    long countByExample(EmployeeExample example) ;	    按条件计数
+    int deleteByExample(EmployeeExample example);	    按条件删除
+    int deleteByPrimaryKey(Integer id);	                按主键删除
+    int insert(Employee record);	                    插入数据
+    int insertSelective(Employee record);	            按条件插入数据
+    List selectByExample(EmployeeExample example);	    按条件查询
+    Employee selectByPrimaryKey(Integer id);	        按主键查询
+    int updateByExampleSelective(@Param(“record”) Employee record, @Param(“example”) EmployeeExample example);	按条件更新值不为null的字段
+    int updateByExample(@Param(“record”) Employee record, @Param(“example”) EmployeeExample example);	按条件更新
+    int updateByPrimaryKeySelective(Employee record);	按主键更新值不为null的字段
+    int updateByPrimaryKey(Employee record);	        按主键更新
+
+4、example实例
+    mybatis的逆向工程中会生成实例及实例对应的example，example/ XXXExample就是封装查询条件，相当于where后面部分
+    XxxExample.java中包含一个static的内部类Criteria，Criteria就是拼装查询条件
+    xxxExample example = new xxxExample();
+    Criteria criteria = new Example().createCriteria()
+
+5、方法
+    example.setOrderByClause(“字段名 ASC”)	        添加升序排列条件，DESC为降序
+    example.setDistinct(false)	                    去除重复，boolean型，true为选择不重复的记录
+    criteria.andXxxIsNull	                        添加字段xxx为null的条件
+    criteria.andXxxIsNotNull	                    添加字段xxx不为null的条件
+    criteria.andXxxEqualTo(value)	                添加xxx字段等于value条件
+    criteria.andXxxNotEqualTo(value)	            添加xxx字段不等于value条件
+    criteria.andXxxGreaterThan(value)	            添加xxx字段大于value条件
+    criteria.andXxxGreaterThanOrEqualTo(value)	    添加xxx字段大于等于value条件
+    criteria.andXxxLessThan(value)	                添加xxx字段小于value条件
+    criteria.andXxxLessThanOrEqualTo(value)	        添加xxx字段小于等于value条件
+    criteria.andXxxIn(List<？>)	                    添加xxx字段值在List<？>条件
+    criteria.andXxxNotIn(List<？>)	                添加xxx字段值不在List<？>条件
+    criteria.andXxxLike(“%”+value+”%”)	            添加xxx字段值为value的模糊查询条件
+    criteria.andXxxNotLike(“%”+value+”%”)	        添加xxx字段值不为value的模糊查询条件
+    criteria.andXxxBetween(value1,value2)	        添加xxx字段值在value1和value2之间条件
+    criteria.andXxxNotBetween(value1,value2)	    添加xxx字段值不在value1和value2之间条件
