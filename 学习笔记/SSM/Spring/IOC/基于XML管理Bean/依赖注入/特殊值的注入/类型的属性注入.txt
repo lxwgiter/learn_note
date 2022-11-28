@@ -1,0 +1,56 @@
+方式一：引用外部已声明的bean
+    被引用的bean：
+        <bean id="clazzOne" class="com.lxw.spring.bean.Clazz">
+            <property name="clazzId" value="1111"></property>
+            <property name="clazzName" value="财源滚滚班"></property>
+        </bean>
+
+    使用引用的bean：
+        <bean id="student" class="com.atguigu.spring.bean.Student">
+            <property name="id" value="1004"></property>
+            <property name="name" value="赵六"></property>
+            <property name="age" value="26"></property>
+            <property name="sex" value="女"></property>
+            <!-- ref属性：引用IOC容器中某个bean的id，将所对应的bean为属性赋值 -->
+            <property name="clazz" ref="clazzOne"></property>
+        </bean>
+
+    如果错把ref属性写成了value属性，会抛出异常： Caused by: java.lang.IllegalStateException:
+    Cannot convert value of type 'java.lang.String' to required type
+    'com.lxw.spring.bean.Clazz' for property 'clazz': no matching editors or conversion
+    strategy found
+    意思是不能把String类型转换成我们要的Clazz类型，说明我们使用value属性时，Spring只把这个
+    属性看做一个普通的字符串，不会认为这是一个bean的id，更不会根据它去找到bean来赋值
+
+方式二：内部bean
+    <bean id="student" class="com.lxw.spring.bean.Student">
+        <property name="id" value="1004"></property>
+        <property name="name" value="赵六"></property>
+        <property name="age" value="26"></property>
+        <property name="sex" value="女"></property>
+        <property name="clazz">
+            <!-- 在一个bean中再声明一个bean就是内部bean -->
+            <!-- 内部bean只能用于给属性赋值，不能在外部通过IOC容器获取，因此可以省略id属性 -->
+            <bean  class="com.lxw.spring.bean.Clazz">
+                    <property name="clazzId" value="2222"></property>
+                    <property name="clazzName" value="远大前程班"></property>
+            </bean>
+        </property>
+    </bean>
+
+
+方式三：级联属性赋值(和Mybatis中的级联不同，这里IOC几乎不用)
+    <bean id="studentFour" class="com.lxw.spring.bean.Student">
+        <property name="id" value="1004"></property>
+        <property name="name" value="赵六"></property>
+        <property name="age" value="26"></property>
+        <property name="sex" value="女"></property>
+        <!-- 一定先引用某个bean为属性赋值，才可以使用级联方式更新属性 -->
+        <property name="clazz" ref="clazzOne"></property>
+        <property name="clazz.clazzId" value="3333"></property>
+        <property name="clazz.clazzName" value="最强王者班"></property>
+    </bean>
+
+
+
+

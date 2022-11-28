@@ -1,0 +1,67 @@
+1、实现方式
+    注解+扫描
+2、注解
+    @Component：将类标识为普通组件
+    @Controller：将类标识为控制层组件
+    @Service：将类标识为业务层组件
+    @Repository：将类标识为持久层组件
+    注：注解只标记在需要管理的实体类，不能在接口上标记注解
+3、对四个注解的理解：
+    @Controller、@Service、@Repository这三个注解只是在@Component注解的基础上起了三个新的名字。
+    对于Spring使用IOC容器管理这些组件来说没有区别。所以@Controller、@Service、@Repository这
+    三个注解只是给开发人员看的，让我们能够便于分辨组件的作用。
+    注意：虽然它们本质上一样，但是为了代码的可读性，为了程序结构严谨我们肯定不能随便胡乱标记。
+
+4、扫描：
+    情况一：最基本的扫描方式
+        <context:component-scan base-package="com.lxw"></context:component-scan>
+        注：需要引入xmlns:context="http://www.springframework.org/schema/context"约束，base-package
+        属性用于指定需要扫描的包，其下所有子包都会被扫描，所有有注解标记的类都会被自动由IOC容器管理。
+
+    情况二：指定要排除的组件
+        context:exclude-filter标签：指定排除规则
+        type：设置排除或包含的依据
+        type="annotation"，根据注解排除，expression中设置要排除的注解的全类名
+        type="assignable"，根据类型排除，expression中设置要排除的类型的全类名
+        <context:component-scan base-package="com.lxw">
+            <context:exclude-filter type="annotation"expression="org.springframework.stereotype.Controller"/>
+            <!--<context:exclude-filter type="assignable"expression="com.lxw.controller.UserController"/>-->
+        </context:component-scan>
+
+    情况三：仅扫描指定组件
+             context:include-filter标签：指定在原有扫描规则的基础上追加的规则
+             use-default-filters属性：取值false表示关闭默认扫描规则
+             此时必须设置use-default-filters="false"，因为默认规则即扫描指定包下所有类
+                type：设置排除或包含的依据
+                type="annotation"，根据注解排除，expression中设置要排除的注解的全类名
+                type="assignable"，根据类型排除，expression中设置要排除的类型的全类名
+    <context:component-scan base-package="com.atguigu" use-default-filters="false">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    <!--<context:include-filter type="assignable" expression="com.lxw.controller.UserController"/>-->
+    </context:component-scan>
+
+5、测试：
+        @Test
+        public void testAnnotation(){
+            ApplicationContext ac = newClassPathXmlApplicationContext("applicationContext.xml");
+            UserController userController = ac.getBean(UserController.class);
+            System.out.println(userController);
+            UserService userService = ac.getBean(UserService.class);
+            System.out.println(userService);
+            UserDao userDao = ac.getBean(UserDao.class);
+            System.out.println(userDao);
+        }
+
+       注：
+            ①实现该测试的前提是：UserController、UserService、UserDao上必须加过注解，spring配置文件中必须进行过扫描。
+            ②得到的userController、userService、userDao并没有进行依赖注入，依赖注入需要使用自动装配处理。
+
+6、组件所对应的bean的id
+    在我们使用XML方式管理bean的时候，每个bean都有一个唯一标识，便于在其他地方引用。现在使用
+    注解后，每个组件仍然应该有一个唯一标识。
+    ●默认情况
+        类名首字母小写就是bean的id。例如：UserController类对应的bean的id就是userController。
+    ●自定义bean的id
+        可通过标识组件的注解的value属性设置自定义的bean的id
+        @Service("userService")//默认为userServiceImpl
+        public class UserServiceImpl implements UserService {}

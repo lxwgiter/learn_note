@@ -1,0 +1,219 @@
+1、整体步骤：
+    ①在Spring的配置文件中配置事务管理器
+    ②开启事务的注解驱动
+    在需要被事务管理的方法上，添加@Transactional注解，该方法就会被事务管理
+2、@Transactional注解标识的位置：
+    ①标识在方法上
+    ②标识在类上，则类中所有的方法都会被事务管理
+    注：一般标识在service层，因为service层表示业务逻辑层，一个方法表示一个完成的功能
+
+3、事先准备的表：
+    ①图书表
+    ②消费者表
+    注：为了体现事务性，我们让消费者的余额不足，并且先进行图书库存减少的操作，查看整个事务失败时，书的库存情况
+    消费这余额不足的验证可以放在Java层验证，也可以放在数据库层验证，我们这里选择了数据库层。
+
+4、实现过程：
+    ①导入Maven依赖：
+                <!-- 基于Maven依赖传递性，导入spring-context依赖即可导入当前所需所有jar包 -->
+                <dependency>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-context</artifactId>
+                    <version>5.3.1</version>
+                </dependency>
+
+                <!-- Spring 持久化层支持jar包 -->
+                <!-- Spring 在执行持久化层操作、与持久化层技术进行整合过程中，需要使用orm、jdbc、tx三个jar包 -->
+                <!-- 导入 orm 包就可以通过 Maven 的依赖传递性把其他两个也导入 -->
+                <dependency>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-orm</artifactId>
+                    <version>5.3.1</version>
+                </dependency>
+
+                <!-- Spring 测试相关 -->
+                <dependency>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-test</artifactId>
+                    <version>5.3.1</version>
+                </dependency>
+
+                <!-- junit测试 -->
+                <dependency>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                    <version>4.12</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <!-- MySQL驱动 -->
+                <dependency>
+                    <groupId>mysql</groupId>
+                    <artifactId>mysql-connector-java</artifactId>
+                    <version>8.0.16</version>
+                </dependency>
+                <!-- 数据源 -->
+                <dependency>
+                    <groupId>com.alibaba</groupId>
+                    <artifactId>druid</artifactId>
+                    <version>1.0.31</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-aspects</artifactId>
+                    <version>5.3.1</version>
+                </dependency>
+
+    ②创建jdbc.properties：
+        jdbc.driver=com.mysql.cj.jdbc.Driver
+        jdbc.url=jdbc:mysql://localhost:3306/ssm?serverTimezone=UTC
+        jdbc.username=root
+        jdbc.password=abc123
+
+    ③配置Spring的配置文件：
+        <?xml version="1.0" encoding="UTF-8"?>
+        <beans xmlns="http://www.springframework.org/schema/beans"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+               xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+            <!--扫描组件-->
+            <context:component-scan base-package="com.lxw.spring"></context:component-scan>
+
+            <!--引入jdbc.properties-->
+            <context:property-placeholder location="classpath:jdbc.properties"></context:property-placeholder>
+
+            <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+                <property name="driverClassName" value="${jdbc.driver}"></property>
+                <property name="url" value="${jdbc.url}"></property>
+                <property name="username" value="${jdbc.username}"></property>
+                <property name="password" value="${jdbc.password}"></property>
+            </bean>
+
+            <bean class="org.springframework.jdbc.core.JdbcTemplate">
+                <property name="dataSource" ref="dataSource"></property>
+            </bean>
+
+            <!--配置事务管理器，事务管理器其实就是spring为我们提供的事务管理的切面-->
+            <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+                <property name="dataSource" ref="dataSource"></property>
+            </bean>
+
+            <!--
+                开启事务的注解驱动
+                将使用@Transactional注解所标识的方法或类中所有的方法使用事务进行管理
+                transaction-manager属性设置事务管理器的id
+                若事务管理器的bean的id默认为transactionManager，则该属性可以不写
+                xmlns:tx="http://www.springframework.org/schema/tx
+                tx的约束特别容易引错，记住是以tx结尾的约束
+            -->
+            <tx:annotation-driven transaction-manager="transactionManager"></tx:annotation-driven>
+        </beans>
+
+    ④Controller层：
+        @Controller
+        public class BookController {
+
+            @Autowired
+            private BookService bookService;
+
+            public void buyBook(Integer userId, Integer bookId){
+                bookService.buyBook(userId, bookId);
+            }
+
+        }
+    ⑤Service层：
+        接口：
+            public interface BookService {
+                void buyBook(Integer userId, Integer bookId);
+            }
+        实现类：
+            @Service
+            public class BookServiceImpl implements BookService {
+
+                @Autowired
+                private BookDao bookDao;
+
+                @Override
+                @Transactional
+                public void buyBook(Integer userId, Integer bookId) {
+                    //查询图书的价格
+                    Integer price = bookDao.getPriceByBookId(bookId);
+                    //更新图书的库存
+                    bookDao.updateStock(bookId);
+                    //更新用户的余额
+                    bookDao.updateBalance(userId, price);
+                }
+            }
+
+    ⑥DAO层：
+        接口：
+            public interface BookDao {
+                /**
+                 * 根据图书的id查询图书的价格
+                 * @param bookId
+                 * @return
+                 */
+                Integer getPriceByBookId(Integer bookId);
+
+                /**
+                 * 更新图书的库存
+                 * @param bookId
+                 */
+                void updateStock(Integer bookId);
+
+                /**
+                 * 更新用户的余额
+                 * @param userId
+                 * @param price
+                 */
+                void updateBalance(Integer userId, Integer price);
+            }
+        实现类：
+            @Repository
+            public class BookDaoImpl implements BookDao {
+
+                @Autowired
+                private JdbcTemplate jdbcTemplate;
+
+                @Override
+                public Integer getPriceByBookId(Integer bookId) {
+                    String sql = "select price from t_book where book_id = ?";
+                    return jdbcTemplate.queryForObject(sql, Integer.class, bookId);
+                }
+
+                @Override
+                public void updateStock(Integer bookId) {
+                    String sql = "update t_book set stock = stock - 1 where book_id = ?";
+                    jdbcTemplate.update(sql, bookId);
+                }
+
+                @Override
+                public void updateBalance(Integer userId, Integer price) {
+                    String sql = "update t_user set balance = balance - ? where user_id = ?";
+                    jdbcTemplate.update(sql, price, userId);
+                }
+            }
+
+    ⑦测试类：
+        @RunWith(SpringJUnit4ClassRunner.class)
+        @ContextConfiguration("classpath:tx-annotation.xml")
+        public class TxByAnnotationTest {
+            @Autowired
+            private BookController bookController;
+
+            @Test
+            public void testBuyBook(){
+                bookController.buyBook(1, 1);
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+

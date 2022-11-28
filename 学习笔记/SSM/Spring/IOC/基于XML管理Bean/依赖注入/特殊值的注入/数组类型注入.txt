@@ -1,0 +1,36 @@
+要设置相应数组属性的set方法
+
+
+①当数组存储类型为字面量类型时：
+    <bean id="student" class="com.lxw.spring.bean.Student">
+        <property name="id" value="1004"></property>
+        <property name="name" value="赵六"></property>
+        <property name="age" value="26"></property>
+        <property name="sex" value="女"></property>
+        <!-- ref属性：引用IOC容器中某个bean的id，将所对应的bean为属性赋值 -->
+        <property name="clazz" ref="clazzOne"></property>
+        <property name="hobbies">
+            <array>
+                <value>抽烟</value>
+                <value>喝酒</value>
+                <value>烫头</value>
+            </array>
+        </property>
+    </bean>
+
+②当数组存储类型为引用数据类型时：
+    <bean id="student" class="com.lxw.spring.bean.Student">
+        <property name="id" value="1004"></property>
+        <property name="name" value="赵六"></property>
+        <property name="age" value="26"></property>
+        <property name="sex" value="女"></property>
+        <!-- ref属性：引用IOC容器中某个bean的id，将所对应的bean为属性赋值 -->
+        <property name="clazz" ref="clazzOne"></property>
+        <property name="hobbies">
+            <array>
+                <ref bean="bean的id"></ref>
+                <ref bean="bean的id"></ref>
+                <ref bean="bean的id"></ref>
+            </array>
+        </property>
+    </bean>

@@ -1,0 +1,214 @@
+1、基于XML和基于注解的区别
+    基于XML的AOP没有使用，@Aspect、@Pointcut、@Before、@After、@AfterReturning、@AfterThrowing、@Around、@Order注解
+    而是采用XML配置文件的方式在spring配置文件中进行配置，基于XML实现AOP并不常用、开发中主要是基于注解实现AOP。
+2、基于XML实现AOP的步骤
+    ①设计接口、实现类、切面，并将后两者用@Component标识为IOC组件(采用xml配置bean的方式也可以)
+    ②spring配置文件中进行扫描组件：
+        <context:component-scan base-package="com.lxw.spring.xml"></context:component-scan>
+    ③引入aop命名空间，开启基于XML的AOP，整体结构为：
+            <!--  开启基于XML的AOP  -->
+            <aop:config>
+                <!--设置一个公共的切入点表达式-->
+                <aop:pointcut id="pointCut" expression="execution(* com.lxw.spring.xml.CalculatorImpl.*(..))"/>
+                <!--将IOC容器中的某个bean设置为切面-->
+                <aop:aspect ref="需要标记为切面的组件的id">
+                    <aop:before method="方法名" pointcut-ref="pointCut"></aop:before>
+                    <aop:after method="方法名" pointcut-ref="pointCut"></aop:after>
+                    <aop:after-returning method="方法名" returning="在方法中设置的返回值参数名" pointcut-ref="pointCut"></aop:after-returning>
+                    <aop:after-throwing method="方法名" throwing="在方法中设置的异常对象参数名" pointcut-ref="pointCut"></aop:after-throwing>
+                    <aop:around method="方法名" pointcut-ref="pointCut"></aop:around>
+                </aop:aspect>
+                <aop:aspect ref="需要标记为切面的组件的id" order="1">
+                    <aop:before method="方法名" pointcut-ref="pointCut"></aop:before>
+                </aop:aspect>
+            </aop:config>
+
+3、实现示例：
+    ①导入依赖
+            <dependencies>
+                <!-- 基于Maven依赖传递性，导入spring-context依赖即可导入当前所需所有jar包 -->
+                <dependency>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-context</artifactId>
+                    <version>5.3.1</version>
+                </dependency>
+                <!-- junit测试 -->
+                <dependency>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                    <version>4.12</version>
+                    <scope>test</scope>
+                </dependency>
+                <!-- spring-aspects会帮我们传递过来aspectjweaver -->
+                <dependency>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-aspects</artifactId>
+                    <version>5.3.1</version>
+                </dependency>
+            </dependencies>
+
+    ②spring配置文件：
+        <!--扫描组件-->
+        <context:component-scan base-package="com.lxw.spring.xml"></context:component-scan>
+
+        <!--  开启基于XML的AOP  -->
+        <aop:config>
+            <!--设置一个公共的切入点表达式-->
+            <aop:pointcut id="pointCut" expression="execution(* com.lxw.spring.xml.CalculatorImpl.*(..))"/>
+            <!--将IOC容器中的某个bean设置为切面-->
+        <!--loggerAspect、validateAspect是标识为IOC组件，自动生成的id  -->
+            <aop:aspect ref="loggerAspect">
+                <aop:before method="beforeAdviceMethod" pointcut-ref="pointCut"></aop:before>
+                <aop:after method="afterAdviceMethod" pointcut-ref="pointCut"></aop:after>
+                <aop:after-returning method="afterReturningAdviceMethod" returning="result" pointcut-ref="pointCut"></aop:after-returning>
+                <aop:after-throwing method="afterThrowingAdviceMethod" throwing="ex" pointcut-ref="pointCut"></aop:after-throwing>
+                <aop:around method="aroundAdviceMethod" pointcut-ref="pointCut"></aop:around>
+            </aop:aspect>
+            <aop:aspect ref="validateAspect" order="1">
+                <aop:before method="beforeMethod" pointcut-ref="pointCut"></aop:before>
+            </aop:aspect>
+        </aop:config>
+    ③接口
+        public interface Calculator {
+            int add(int i, int j);
+            int sub(int i, int j);
+            int mul(int i, int j);
+            int div(int i, int j);
+        }
+
+    ④被代理实现类
+        @Component
+        public class CalculatorImpl implements Calculator {
+            @Override
+            public int add(int i, int j) {
+                int result = i + j;
+                System.out.println("方法内部，result："+result);
+                return result;
+            }
+
+            @Override
+            public int sub(int i, int j) {
+                int result = i - j;
+                System.out.println("方法内部，result："+result);
+                return result;
+            }
+
+            @Override
+            public int mul(int i, int j) {
+                int result = i * j;
+                System.out.println("方法内部，result："+result);
+                return result;
+            }
+
+            @Override
+            public int div(int i, int j) {
+                int result = i / j;
+                System.out.println("方法内部，result："+result);
+                return result;
+            }
+        }
+
+    ⑤切面类一：
+        @Component
+        public class LoggerAspect {
+
+            public void beforeAdviceMethod(JoinPoint joinPoint) {
+                //获取连接点所对应方法的签名信息
+                Signature signature = joinPoint.getSignature();
+                //获取连接点所对应方法的参数
+                Object[] args = joinPoint.getArgs();
+                System.out.println("LoggerAspect，方法："+signature.getName()+"，参数："+ Arrays.toString(args));
+            }
+
+
+            public void afterAdviceMethod(JoinPoint joinPoint){
+                //获取连接点所对应方法的签名信息
+                Signature signature = joinPoint.getSignature();
+                System.out.println("LoggerAspect，方法："+signature.getName()+"，执行完毕");
+            }
+
+            public void afterReturningAdviceMethod(JoinPoint joinPoint, Object result){
+                //获取连接点所对应方法的签名信息
+                Signature signature = joinPoint.getSignature();
+                System.out.println("LoggerAspect，方法："+signature.getName()+"，结果："+result);
+            }
+
+            public void afterThrowingAdviceMethod(JoinPoint joinPoint, Throwable ex){
+                //获取连接点所对应方法的签名信息
+                Signature signature = joinPoint.getSignature();
+                System.out.println("LoggerAspect，方法："+signature.getName()+"，异常："+ex);
+            }
+
+
+            //环绕通知的方法的返回值一定要和目标对象方法的返回值一致
+            public Object aroundAdviceMethod(ProceedingJoinPoint joinPoint){
+                Object result = null;
+                try {
+                    System.out.println("环绕通知-->前置通知");
+                    //表示目标对象方法的执行
+                    result = joinPoint.proceed();
+                    System.out.println("环绕通知-->返回通知");
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                    System.out.println("环绕通知-->异常通知");
+                } finally {
+                    System.out.println("环绕通知-->后置通知");
+                }
+                return result;
+            }
+
+        }
+
+    ⑥切面类二：
+        @Component
+        public class ValidateAspect {
+
+            //@Before("execution(* com.lxw.spring.annotaion.CalculatorImpl.*(..))")
+            @Before("com.lxw.spring.xml.LoggerAspect.pointCut()")
+            public void beforeMethod(){
+                System.out.println("ValidateAspect-->前置通知");
+            }
+
+        }
+
+    ⑦测试类
+            @Test
+            public void testAOPByXML(){
+                ApplicationContext ioc = new ClassPathXmlApplicationContext("spring_aop_xml.xml");
+                Calculator calculator = ioc.getBean(Calculator.class);
+                calculator.add(1,1);
+            }
+
+    ⑧测试结果：
+        ValidateAspect-->前置通知
+        LoggerAspect，方法：add，参数：[1, 1]
+        环绕通知-->前置通知
+        方法内部，result：2
+        环绕通知-->返回通知
+        环绕通知-->后置通知
+        LoggerAspect，方法：add，结果：2
+        LoggerAspect，方法：add，执行完毕
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

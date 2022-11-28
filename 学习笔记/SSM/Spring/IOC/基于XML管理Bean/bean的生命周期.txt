@@ -1,0 +1,74 @@
+①具体的生命周期过程
+    ▶bean对象创建（调用无参构造器）
+    ▶给bean对象设置属性
+    ▶bean对象初始化之前操作（由bean的后置处理器负责）
+    ▶bean对象初始化（需在配置bean时指定初始化方法）
+    ▶bean对象初始化之后操作（由bean的后置处理器负责）
+    ▶bean对象就绪可以使用
+    ▶bean对象销毁（需在配置bean时指定销毁方法）
+    ▶IOC容器关闭
+    注：
+    ①单例的bean在IOC容器创建时，会一并创建，而不是等到获取时再创建。多例的bean会等到使用者获取时再创建。
+        ▶若bean的作用域为单例时，生命周期的前三个步骤会在获取IOC容器时执行，
+        ▶若bean的作用域为多例时，生命周期的前三个步骤会在获取bean时执行
+    ②单例的bean的销毁再IOC容器关闭时自动执行全权交给容器管理，多例的bean，在IOC容器关闭后并不会自动销毁
+
+
+②initMethod()和destroyMethod()方法
+    若我们想看到完整的生命周期，需要手动指定initMethod()和destroyMethod()方法，可以通过配置bean指定为初始化和销毁的方法
+        1-在User类中添加initMethod()和destroyMethod()方法
+        2-bean的配置放方法：
+            <!-- 使用init-method属性指定初始化方法 -->
+            <!-- 使用destroy-method属性指定销毁方法 -->
+            <bean class="com.lxw.bean.User" scope="prototype" init-method="initMethod" destroy-method="destroyMethod">
+                <property name="id" value="1001"></property>
+                <property name="username" value="admin"></property>
+                <property name="password" value="123456"></property>
+                <property name="age" value="23"></property>
+            </bean>
+        3-测试
+            @Test
+            public void testLife(){
+                ClassPathXmlApplicationContext ac = new
+            ClassPathXmlApplicationContext("spring-lifecycle.xml");
+                User bean = ac.getBean(User.class);
+                System.out.println("生命周期：4、通过IOC容器获取bean并使用");
+                ac.close();
+            }
+
+③bean的后置处理器
+    bean的后置处理器会在生命周期的初始化前后添加额外的操作，需要实现BeanPostProcessor接口，
+    且配置到IOC容器中，需要注意的是，bean后置处理器不是单独针对某一个bean生效，而是针对IOC容
+    器中所有bean都会执行
+
+    后置处理器示例：
+        public class MyBeanPostProcessor implements BeanPostProcessor {
+            @Override
+            public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+                //此方法在bean的生命周期初始化之前执行
+                System.out.println("MyBeanPostProcessor-->后置处理器postProcessBeforeInitialization");
+                return bean;
+            }
+
+            @Override
+            public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+                //此方法在bean的生命周期初始化之后执行
+                System.out.println("MyBeanPostProcessor-->后置处理器postProcessAfterInitialization");
+                return bean;
+            }
+        }
+
+    在IOC容器中配置后置处理器：
+    <!-- bean的后置处理器要放入IOC容器才能生效 -->
+    <bean id="myBeanProcessor" class="com.lxw.spring.process.MyBeanProcessor"/>
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,160 @@
+1、什么是JdbcTemplate？
+    Spring 框架对 JDBC 进行封装，使用 JdbcTemplate 方便实现对数据库操作，一般很少使用。
+2、实现方式：
+    Spring把常用的JDBC方法封装进了JdbcTemplate类中,仍然使用的依赖注入的方式。
+    我们需要把JdbcTemplate配置进IOC容器中，并使用数据源对其进行依赖注入。
+3、常用的增删改查方法
+    ①增删改：update(sql, Object..)
+    ②查询：
+        ▶单条表数据查询:queryForObject(sql, new BeanPropertyRowMapper<>(Class clazz), Object..)
+        ▶特殊值查询:queryForObject(sql, Integer.class,Object..)
+        ▶多条表数据查询:query(sql, new BeanPropertyRowMapper<>(Class clazz), Object..)
+
+4、具体实现：
+    ①导入Maven依赖:
+                <!-- 基于Maven依赖传递性，导入spring-context依赖即可导入当前所需所有jar包 -->
+                <dependency>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-context</artifactId>
+                    <version>5.3.1</version>
+                </dependency>
+
+                <!-- Spring 持久化层支持jar包 -->
+                <!-- Spring 在执行持久化层操作、与持久化层技术进行整合过程中，需要使用orm、jdbc、tx三个jar包 -->
+                <!-- 导入 orm 包就可以通过 Maven 的依赖传递性把其他两个也导入 -->
+                <dependency>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-orm</artifactId>
+                    <version>5.3.1</version>
+                </dependency>
+
+                <!-- Spring 测试相关 -->
+                <dependency>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-test</artifactId>
+                    <version>5.3.1</version>
+                </dependency>
+
+                <!-- junit测试 -->
+                <dependency>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                    <version>4.12</version>
+                    <scope>test</scope>
+                </dependency>
+
+                <!-- MySQL驱动 -->
+                <dependency>
+                    <groupId>mysql</groupId>
+                    <artifactId>mysql-connector-java</artifactId>
+                    <version>8.0.16</version>
+                </dependency>
+                <!-- 数据源 -->
+                <dependency>
+                    <groupId>com.alibaba</groupId>
+                    <artifactId>druid</artifactId>
+                    <version>1.0.31</version>
+                </dependency>
+
+    ②创建jdbc.properties
+        jdbc.driver=com.mysql.cj.jdbc.Driver
+        jdbc.url=jdbc:mysql://localhost:3306/ssm?serverTimezone=UTC
+        jdbc.username=root
+        jdbc.password=abc123
+
+    ③配置Spring的配置文件
+        <?xml version="1.0" encoding="UTF-8"?>
+        <beans xmlns="http://www.springframework.org/schema/beans"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns:context="http://www.springframework.org/schema/context"
+               xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+
+            <!--引入jdbc.properties-->
+            <context:property-placeholder location="classpath:jdbc.properties"></context:property-placeholder>
+            <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+                <property name="driverClassName" value="${jdbc.driver}"></property>
+                <property name="url" value="${jdbc.url}"></property>
+                <property name="username" value="${jdbc.username}"></property>
+                <property name="password" value="${jdbc.password}"></property>
+            </bean>
+
+            <!--对JdbcTemplate进行依赖注入-->
+            <bean class="org.springframework.jdbc.core.JdbcTemplate">
+                <property name="dataSource" ref="dataSource"></property>
+            </bean>
+
+        </beans>
+
+    ④设计实体类User
+    ⑤编写测试类
+    /**
+     * 此测试类用于测试JdbcTemplate的增删改查功能，
+     * 同时演示了Spring整合Junit
+     */
+        //指定当前测试类在Spring的测试环境中执行，此时就可以通过注入的方式直接获取IOC容器中bean
+        @RunWith(SpringJUnit4ClassRunner.class)
+        //设置Spring测试环境的配置文件
+        @ContextConfiguration("classpath:spring-jdbc.xml")
+        public class JdbcTemplateTest {
+            //通过spring整合Junit，属性即可从IOC容器中进行依赖注入
+            @Autowired
+            private JdbcTemplate jdbcTemplate;
+
+            @Test
+            public void testInsert(){
+                String sql = "insert into t_user values(null,?,?,?,?,?)";
+                jdbcTemplate.update(sql, "root", "123", 23, "女", "123@qq.com");
+            }
+
+            @Test
+            public void testGetUserById(){
+                String sql = "select * from t_user where id = ?";
+                //查询单条表数据
+                User user = jdbcTemplate.queryForObject(sql, new BeanPropertyRowMapper<>(User.class), 1);
+                System.out.println(user);
+            }
+
+            @Test
+            public void testGetAllUser(){
+                String sql = "select * from t_user";
+                //查询多条表数据
+                List<User> list = jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(User.class));
+                list.forEach(System.out::println);
+            }
+
+            @Test
+            public void testGetCount(){
+                String sql = "select count(*) from t_user";
+                //查询特殊数据
+                Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
+                System.out.println(count);
+            }
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

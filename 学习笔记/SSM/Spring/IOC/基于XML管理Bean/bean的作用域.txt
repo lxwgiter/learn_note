@@ -1,0 +1,28 @@
+①概念
+    ●在Spring中可以通过配置bean标签的scope属性来指定bean的作用域范围，各取值含义参加下表：
+    取值                                 含义                                   创建对象的时机
+    singleton（默认）                  在IOC容器中，这个bean的对象始终为单实例         IOC容器初始化时
+    prototype                         这个bean在IOC容器中有多个实例                获取bean时
+    ●如果是在WebApplicationContext环境下还会有另外两个作用域（但不常用）：
+    取值                              含义
+    request                         在一个请求范围内有效
+    session                         在一个会话范围内有效
+
+②IOC配置：
+        scope：设置bean的作用域
+        scope="singleton|prototype"
+        singleton（单例）：表示获取该bean所对应的对象都是同一个
+        prototype（多例）：表示获取该bean所对应的对象都不是同一个
+    <bean id="student" class="com.lxw.spring.pojo.Student" scope="prototype">
+        <property name="sid" value="1001"></property>
+        <property name="name" value="张三"></property>
+    </bean>
+
+③测试
+    @Test
+    public void testScope(){
+        ApplicationContext ioc = new ClassPathXmlApplicationContext("spring-scope.xml");
+        Student student1 = ioc.getBean(Student.class);
+        Student student2 = ioc.getBean(Student.class);
+        System.out.println(student1 == student2);//false
+    }

@@ -311,7 +311,7 @@
             ①集合是无序的，所以集合不支持下标索引访问，但是集合和列表一样，是允许修改的
             ②集合是不支持元素重复的
         集合的定义
-            ①变量名称 = set{元素1,元素2,元素3....}
+            ①变量名称 = {元素1,元素2,元素3....}
             ②定义空集合：
                 变量名称 =set()
                 不支持！"变量名称={}",{}中必须有值，如果没有值，则默认是dict，不是set
@@ -354,7 +354,7 @@
             |-- items()                # 以列表返回可遍历的(键, 值) 元组数组
             |-- pop(key)             # 通过key，删除键值对
             |-- popitem()            #  返回并删除字典中的最后一对键和值。
-            |-- update()             # 合并字典  等价于 {**对象, **对象}
+            |-- update()             # 合并字典，可做添加方法，参数为字典对象  等价于 {**对象, **对象}
             |-- fromkeys(iterable)    # 生成一个新的字典对象
 
         （3）、如何遍历字典：
@@ -784,6 +784,78 @@
 
 32、逻辑运算符
     python中没有"&&"和"||"逻辑判断符，取而代之的是and、or、not
+
+33、random模块
+    ①random.random()方法：
+        返回随机生成的一个实数，它在[0,1)范围内。
+    ②random.randint(num1,num2)方法：
+        返回随机生成的[num1,num2]之间的整数。（其中num1和num2都可以取到，左闭右闭区间）
+    ③random.sample(list,length)方法
+        多用于截取列表的指定长度的随机数，但是不会改变列表本身的排序,即对list进行随机截取，截取长度为length
+        但是结果集中，相对顺序不会改变。
+
+34、list.sort()方法：
+    ●sort() 函数用于对原列表进行排序，如果指定参数，则使用比较函数指定的比较函数。
+    ●list.sort(cmp=None, key=None, reverse=False)
+    ●参数：
+        ▶cmp -- 可选参数, 如果指定了该参数会使用该参数的方法进行排序。
+        ▶key -- 主要是用来进行比较的元素，只有一个参数，具体的函数的参数就是取自于可迭代对象中，指定可迭代对象中的一个元素来进行排序。
+        ▶reverse -- 排序规则，reverse = True 降序， reverse = False 升序（默认）。
+
+35、time模块
+    ①time.localtime()
+        获取当前日期时间,得到表示时间的struct_time元组：
+            time.struct_time(tm_year=2022, tm_mon=11, tm_mday=18, tm_hour=11, tm_min=51, tm_sec=54, tm_wday=4, tm_yday=322, tm_isdst=0)
+        可通过：
+            date = time.localtime()
+            year, month, day = date[:3]
+        获取当前时间
+    ②time.time()
+        返回当前时间的时间戳(1970元年后的浮点秒数)
+
+36、for in语句做列表生成式
+    作用：快速生成具有特定规律的列表
+        print([i for i in range(1, 11)])
+        print([i*2 for i in range(1, 11)])
+        print([i*i for i in range(1, 11)])
+        print([str(i) for i in range(1, 11)])
+        print([i for i in range(1, 11) if i % 2 == 0])
+
+37、python中的注解“@”
+    类似于AOP，提高了代码的复用性，示例：
+        def deco(func):
+          def wrapper():
+            print(f"before {func.__name__} called.")
+            func()
+            print(f"after {func.__name__} called.")
+          return wrapper
+
+        @deco
+        def myfunc1():
+          print("myfunc1() called.")
+    输出结果：
+        # before myfunc1 called.
+        # myfunc1() called.
+        # after myfunc1 called.
+    代码可以理解为:
+        myfun1=deco(myfun1)
+        myfun1()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

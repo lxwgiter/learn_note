@@ -1,0 +1,50 @@
+1、引入Spring依赖
+    <!-- 基于Maven依赖传递性，导入spring-context依赖即可导入当前所需所有jar包 -->
+          <dependency>
+              <groupId>org.springframework</groupId>
+              <artifactId>spring-context</artifactId>
+              <version>5.3.1</version>
+          </dependency>
+
+2、在pojo包中创建需要被IOC管理的Bean
+    public class HelloWorld {
+        public void sayHello(){
+            System.out.println("helloWorld")
+    }
+
+3、创建Spring的配置文件
+    一般命名为applicationContext，不做强制要求
+
+4、在Spring配置文件中配置需要被管理的Bean
+    配置HelloWorld所对应的bean，即将HelloWorld的对象交给Spring的IOC容器管理
+    通过bean标签配置IOC容器所管理的bean
+    属性：
+    id：设置bean的唯一标识
+    class：设置bean所对应类型的全类名
+
+    <bean id="helloWorld" class="com.lxw.spring.bean.HelloWorld"></bean>
+
+5、创建测试类测试
+    @Test
+    public void testHelloWorld(){
+    ApplicationContext ac = new
+    ClassPathXmlApplicationContext("applicationContext.xml");
+        HelloWorld helloworld = (HelloWorld) ac.getBean("helloWorld");
+        helloworld.sayHello();
+    }
+
+6、注意
+    Spring 底层默认通过反射技术调用组件类的无参构造器来创建组件对象，这一点需要注意。如果在需要
+    无参构造器时，没有无参构造器，则会抛出下面的异常：
+        ”No default constructor found“
+
+
+
+
+
+
+
+
+
+
+

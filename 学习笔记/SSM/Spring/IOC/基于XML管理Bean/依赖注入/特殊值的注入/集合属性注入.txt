@@ -1,0 +1,113 @@
+要设置相应集合属性的set方法
+
+
+1、List类型注入：
+    方式一：
+        <bean id="clazz" class="com.lxw.spring.bean.Clazz">
+            <property name="clazzId" value="4444"></property>
+            <property name="clazzName" value="Javaee0222"></property>
+            <property name="students">
+                <list>
+                    <ref bean="studentOne"></ref>
+                    <ref bean="studentTwo"></ref>
+                    <ref bean="studentThree"></ref>
+                </list>
+            </property>
+        </bean>
+    方式二：
+        使用util命名空间
+            <!--配置一个集合类型的bean，需要使用util的约束-->
+            <util:list id="studentList">
+                <ref bean="studentOne"></ref>
+                <ref bean="studentTwo"></ref>
+                <ref bean="studentThree"></ref>
+            </util:list>
+
+        <bean id="clazzOne" class="com.lxw.spring.pojo.Clazz">
+            <property name="cid" value="1111"></property>
+            <property name="cname" value="最强王者班"></property>
+            <property name="students" ref="studentList"></property>
+        </bean>
+
+2、Set类型注入：
+方式一：
+    <bean id="clazz" class="com.lxw.spring.bean.Clazz">
+        <property name="clazzId" value="4444"></property>
+        <property name="clazzName" value="Javaee0222"></property>
+        <property name="students">
+            <set>
+                <ref bean="studentOne"></ref>
+                <ref bean="studentTwo"></ref>
+                <ref bean="studentThree"></ref>
+            </set>
+        </property>
+    </bean>
+
+方式二：
+        使用util命名空间
+            <!--配置一个集合类型的bean，需要使用util的约束-->
+            <util:set id="studentSet">
+                <ref bean="studentOne"></ref>
+                <ref bean="studentTwo"></ref>
+                <ref bean="studentThree"></ref>
+            </util:set>
+
+        <bean id="clazzOne" class="com.lxw.spring.pojo.Clazz">
+            <property name="cid" value="1111"></property>
+            <property name="cname" value="最强王者班"></property>
+            <property name="students" ref="studentSet"></property>
+        </bean>
+
+
+
+3、Map类型注入
+    方式一：
+        <bean id="studentFour" class="com.lxw.spring.bean.Student">
+        <property name="teacherMap">
+                <map>
+                    <entry>
+                        <key>
+                            <value>10010</value>
+                        </key>
+                        <ref bean="teacherOne"></ref>
+                    </entry>
+                    <entry>
+                        <key>
+                            <value>10086</value>
+                        </key>
+                        <ref bean="teacherTwo"></ref>
+                    </entry>
+                </map>
+        </property>
+        </bean>
+
+    方式二：
+        <util:map id="teacherMap">
+            <entry key="10086" value-ref="teacherOne"></entry>
+            <entry key="10010" value-ref="teacherTwo"></entry>
+        </util:map>
+
+        <bean id="studentFour" class="com.lxw.spring.bean.Student">
+            <property name="teacherMap" ref="teacherMap"></property>
+        </bean>
+
+
+扩展：p命名空间
+    引入p命名空间后，可以通过以下方式为bean的各个属性赋值
+        <bean id="studentSix" class="com.lxw.spring.bean.Student"
+            p:id="1006" p:name="小明" p:clazz-ref="clazzOne" p:teacherMap-
+        ref="teacherMap"></bean>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

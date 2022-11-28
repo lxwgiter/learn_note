@@ -1,0 +1,65 @@
+1、什么是IOC？
+    IOC：Inversion of Control，翻译过来是反转控制。
+2、为什么需要IOC？
+    ①获取资源的传统方式：
+        自己做饭：买菜、洗菜、择菜、改刀、炒菜，全过程参与，费时费力，必须清楚了解资源创建整个过程中的全部细节且熟练掌握。
+        在应用程序中的组件需要获取资源时，传统的方式是组件主动的从容器中获取所需要的资源，在这样的模式下开发人员往往需要
+        知道在具体容器中特定资源的获取方式，增加了学习成本，同时降低了开发效率。
+    ②反转控制方式获取资源
+        点外卖：下单、等、吃，省时省力，不必关心资源创建过程的所有细节。
+        反转控制的思想完全颠覆了应用程序组件获取资源的传统方式：反转了资源的获取方向——改由容器主动的将资源推送给需要的组件，
+        开发人员不需要知道容器是如何创建资源对象的，只需要提供接收资源的方式即可，极大的降低了学习成本，提高了开发的效率。
+        这种行为也称为查找的被动形式。
+    ③具体的例子：
+        我们只需要导入Spring、mysql驱动、Druid的依赖，并且将数据库连接池对象交给IOC容器管理，那么当我们需要操作时，
+        直接从IOC容器里获取即可，至于数据库连接池的实例化方式，我们不需要关心，IOC为我们屏蔽掉了实现的细节。
+
+3、什么是DI？
+    DI：Dependency Injection，翻译过来是依赖注入。
+4、DI与IOC之间的关系：
+    ●DI 是 IOC 的另一种表述方式：即组件以一些预先定义好的方式（例如：setter 方法）接受来自于容器的资源注入。
+    相对于IOC而言，这种表述更直接。
+    ●所以结论是：IOC 就是一种反转控制的思想， 而 DI 是对 IOC 的一种具体实现。
+
+5、IOC容器在Spring中的实现
+    Spring 的 IOC 容器就是 IOC 思想的一个落地的产品实现。IOC 容器中管理的组件也叫做 bean。在创建
+    bean 之前，首先需要创建 IOC 容器。Spring 提供了 IOC 容器的两种实现方式：
+        ①BeanFactory
+            这是 IOC 容器的基本实现，是 Spring 内部使用的接口。面向 Spring 本身，不提供给开发人员使用。
+            注：意味着对象的管理使用的是反射+工厂模式，并且默认是单例的
+        ②ApplicationContext
+            BeanFactory 的子接口，提供了更多高级特性。面向 Spring 的使用者，几乎所有场合都使用
+            ApplicationContext 而不是底层的 BeanFactory。
+        ③ApplicationContext的主要实现类
+            类型名                                             简介
+            ClassPathXmlApplicationContext                  通过读取类路径下的 XML 格式的配置文件创建 IOC 容器对象
+            FileSystemXmlApplicationContext                 通过文件系统路径读取 XML 格式的配置文件创建 IOC 容器对象
+            ConfigurableApplicationContext                  ApplicationContext 的子接口，包含一些扩展方法refresh() 和 close() ，让 ApplicationContext 具有启动、关闭和刷新上下文的能力。
+            WebApplicationContext                           专门为 Web 应用准备，基于 Web 环境创建 IOC 容器对象，并将对象引入存入 ServletContext 域中。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

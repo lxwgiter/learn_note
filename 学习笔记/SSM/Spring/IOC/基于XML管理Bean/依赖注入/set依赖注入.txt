@@ -1,0 +1,20 @@
+1、若只写<bean>标签，没有子标签，则意味着不进行依赖注入，使用空参构造器。
+2、set注入调用的是属性的set方法，所以一定要设置各个属性的set方法。
+3、使用示例：
+    <bean id="student" class="com.lxw.spring.pojo.Student">
+            property：通过成员变量的set方法进行赋值
+            name：设置需要赋值的属性名（和set方法有关）
+            value：设置为属性所赋的值，只能是字面量。
+        <property name="sid" value="1001"></property>
+        <property name="sname" value="张三"></property>
+        <property name="age" value="23"></property>
+        <property name="gender" value="男"></property>
+    </bean>
+
+        @Test
+        public void setDI(){
+            ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("spring_ioc.xml");
+            Student studentOne = applicationContext.getBean("studentOne", Student.class);
+            System.out.println(studentOne);
+        }
+    通过这种方式寻找IOC中的bean，获取的对象已经进行了依赖注入。

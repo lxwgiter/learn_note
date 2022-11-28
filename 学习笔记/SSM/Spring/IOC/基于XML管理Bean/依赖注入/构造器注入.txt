@@ -1,0 +1,69 @@
+1、使用构造器注入的前提条件是，需要被管理的Bean中设置了可以进行匹配的构造器
+2、在Student类中添加有参构造
+    public Student(Integer sid, String sname, String gender, Integer age) {
+        this.sid = sid;
+        this.sname = sname;
+        this.gender = gender;
+        this.age = age;
+    }
+3、配置bean
+    <bean id="student" class="com.lxw.spring.pojo.Student">
+        <constructor-arg value="1002"></constructor-arg>
+        <constructor-arg value="李四"></constructor-arg>
+        <constructor-arg value="女"></constructor-arg>
+        <constructor-arg value="24" ></constructor-arg>
+    </bean>
+4、测试：
+    public void constructDI(){
+        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("spring_ioc.xml");
+        Student studentOne = applicationContext.getBean("studentOne", Student.class);
+        System.out.println(studentOne);
+    }
+
+
+5、构造器匹配冲突的解决
+    constructor-arg标签还有两个属性可以进一步描述构造器参数：
+    index属性：指定参数所在位置的索引（从0开始）
+    name属性：指定参数名
+
+    若有匹配冲突的构造器，比如：
+
+    ①public Student(Integer sid, String sname, String gender, Integer age) {
+        this.sid = sid;
+        this.sname = sname;
+        this.gender = gender;
+        this.age = age;
+    }
+
+    ②public Student(Integer sid, String sname, String gender, Double score) {
+        this.sid = sid;
+        this.sname = sname;
+        this.gender = gender;
+        this.score = score;
+    }
+
+    怎么去匹配第一个构造器？
+
+    <bean id="studentTwo" class="com.lxw.spring.pojo.Student">
+        <constructor-arg value="1002"></constructor-arg>
+        <constructor-arg value="李四"></constructor-arg>
+        <constructor-arg value="女"></constructor-arg>
+        <constructor-arg value="24" name="age"></constructor-arg>
+    </bean>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

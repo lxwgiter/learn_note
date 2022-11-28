@@ -1,0 +1,56 @@
+以引入jdbc.properties文件，将Druid交给IOC管理为例：
+①加入依赖
+        <!-- MySQL驱动 -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.16</version>
+        </dependency>
+        <!-- 数据源 -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+            <version>1.0.31</version>
+        </dependency>
+
+②创建外部属性文件
+    创建jdbc.properties文件，放在resources目录下
+        jdbc.user=root
+        jdbc.password=abc123
+        jdbc.url=jdbc:mysql://localhost:3306/ssm?serverTimezone=UTC
+        jdbc.driver=com.mysql.cj.jdbc.Driver
+
+③在IOC中引入属性文件
+    <!-- 引入外部属性文件 -->
+           <context:property-placeholder location="classpath:jdbc.properties"/>
+
+           !要引入context约束!
+
+④在IOC配置bean
+    <bean id="druidDataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="url" value="${jdbc.url}"/>
+        <property name="driverClassName" value="${jdbc.driver}"/>
+        <property name="username" value="${jdbc.user}"/>
+        <property name="password" value="${jdbc.password}"/>
+    </bean>
+
+⑤测试
+    @Test
+    public void testDataSource() throws SQLException {
+        ApplicationContext ac = new ClassPathXmlApplicationContext("spring-datasource.xml");
+        DataSource dataSource = ac.getBean(DataSource.class);
+        Connection connection = dataSource.getConnection();
+        System.out.println(connection);
+    }
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,312 @@
+1、技术说明：
+    ●Spring基于注解的AOP-->AspectJ注解层-->具体实现层
+        ▶Spring基于注解的AOP：是Spring中AOP的整体实现
+        ▶AspectJ注解层：AOP是一种面向切面编程的思想，而AspectJ是AOP思想的具体实现
+        ▶具体实现层：
+            ▶有接口的情况：使用JDK动态代理
+            ▶没有接口的情况：使用cglib动态代理
+2、细节介绍
+    ●动态代理（InvocationHandler）：
+        JDK原生的实现方式，需要被代理的目标类必须实现接口。因为这个技术要求代理对象和目标对象实现同样的接口（兄弟两个拜把子模式）。
+    ●cglib：
+        通过继承被代理的目标类（认干爹模式）实现代理，所以不需要目标类实现接口。
+    ●AspectJ：
+        本质上是静态代理，将代理逻辑“植入”被代理的目标类编译得到的字节码文件，所以最终效果是动态的。weaver就是织入器。
+        Spring只是借用了AspectJ中的注解。
+
+3、使用基于注解的AOP的步骤：
+    ①导入spring IOC、AOP依赖
+        IOC依赖：
+                <dependency>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-context</artifactId>
+                    <version>5.3.1</version>
+                </dependency>
+        AOP依赖：
+                <dependency>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-aspects</artifactId>
+                    <version>5.3.1</version>
+                </dependency>
+
+    ②将被代理类用@Component标识IOC组件
+     将代理类用@Component标识为IOC组件
+     将代理类用@Aspect标识为切面
+
+    ③在spring配置文件中引入context命名空间，扫描组件
+        <context:component-scan base-package="包名"></context:component-scan>
+    引入aop命名空间，开启基于注解的AOP
+        <aop:aspectj-autoproxy />
+
+    ④在切面中设置前置通知、后置通知、返回通知、异常通知(或环绕通知)
+
+    ⑤在测试类中获取IOC容器、通过接口类型即可获取代理类对象。
+
+4、各种通知
+    ▶前置通知：使用@Before注解标识，在被代理的目标方法前执行
+    ▶返回通知：使用@AfterReturning注解标识，在被代理的目标方法成功结束后执行（寿终正寝）(在目标对象方法返回值之后执行,可以在该通知中获取到返回值)
+    ▶异常通知：使用@AfterThrowing注解标识，在被代理的目标方法异常结束后执行（死于非命）(在目标对象方法的catch字句中执行，可以在该通知中获取到异常信息)
+    ▶后置通知：使用@After注解标识，在被代理的目标方法最终结束后执行（盖棺定论）(在目标对象方法的finally字句中执行)
+    ▶环绕通知：使用@Around注解标识，使用try...catch...finally结构围绕整个被代理的目标方法，包括上面四种通知对应的所有位置
+
+5、不同spring版本通知的执行顺序：
+      ●Spring版本5.3.x以前：
+          ▶前置通知
+          ▶目标操作
+          ▶后置通知
+          ▶返回通知或异常通知
+      ●Spring版本5.3.x以后：
+          ▶前置通知
+          ▶目标操作
+          ▶返回通知或异常通知
+          ▶后置通知
+
+6、什么是切入点表达式？
+    “代理的逻辑”(其实就是通知)可以通过切入点表达式套入到被代理的目标方法上
+
+7、切入点表达式的语法细节：
+    ●用*号代替“权限修饰符”和“返回值”部分表示“权限修饰符”和“返回值”不限
+    ●在包名的部分，一个“*”号只能代表包的层次结构中的一层，表示这一层是任意的。
+        ▶例如：*.Hello匹配com.Hello，不匹配com.atguigu.Hello
+    ●在包名的部分，使用“*..”表示包名任意、包的层次深度任意
+    ●在类名的部分，类名部分整体用*号代替，表示类名任意
+    ●在类名的部分，可以使用*号代替类名的一部分
+        ▶例如：*Service匹配所有名称以Service结尾的类或接口
+    ●在方法名部分，可以使用*号表示方法名任意
+    ●在方法名部分，可以使用*号代替方法名的一部分
+        ▶例如：*Operation匹配所有方法名以Operation结尾的方法
+    ●在方法参数列表部分，使用(..)表示参数列表任意
+    ●在方法参数列表部分，使用(int,..)表示参数列表以一个int类型的参数开头
+    ●在方法参数列表部分，基本数据类型和对应的包装类型是不一样的
+        ▶切入点表达式中使用 int 和实际方法中 Integer 是不匹配的
+    ●在方法返回值部分，如果想要明确指定一个返回值类型，那么必须同时写明权限修饰符
+        ▶例如：execution(public int ..Service.*(.., int)) 正确
+        ▶例如：execution(* int ..Service.*(.., int)) 错误
+
+
+8、切入点表达式在基于注解的AOP的书写位置
+    ①在@Before、@AfterReturning、@AfterThrowing、@After、@Around注解的value值中，例如
+        @Before("execution(* com.lxw.spring.annotaion.CalculatorImpl.*(..))")
+    ②在公共的切入点表达式中，例如：
+        @Pointcut("execution(* com.lxw.spring.annotaion.CalculatorImpl.*(..))")
+        public void pointCut(){}
+    当需要引用公共的切入点表达式时，秩序引用被@Pointcut标注的方法即可，例如：
+        @Before("pointCut()")
+
+9、在切面中获取连接点的信息
+     在任意通知方法的参数位置，设置JoinPoint类型的参数，就可以获取连接点所对应方法的信息
+     ①获取连接点所对应方法的签名信息
+        Signature signature = joinPoint.getSignature();
+     ②获取方法名：
+        String methodName=signature.getName()
+     ③获取连接点所对应方法的参数
+        Object[] args = joinPoint.getArgs();
+     ④获取方法返回值(必须是返回通知才可以)
+         在返回通知注解的value属性中添加returning值，一般设置为result
+         然后在通知方法的参数位置，设置Object result类型的参数，就可以在方法体中获取返回值
+     ⑤获取异常信息(必须是异常通知)
+         在返回通知注解的value属性中添加throwing值，一般设置为ex
+         然后在通知方法的参数位置，设置Object ex类型的参数，就可以在方法体中获取异常信息
+
+10、切面的优先级
+    为什么需要设置切面的优先级？
+        当IOC容器中有多个切面时，这时就会出现多个切面之间的执行顺序不确定，通过切面优先级，可以指定哪个切面执行在外层。
+     可以通过@Order注解的value属性设置优先级，默认值Integer的最大值
+     @Order注解的value属性值越小，优先级越高
+
+11、基于注解的AOP演示：
+    ①导入依赖
+        <dependencies>
+            <!-- 基于Maven依赖传递性，导入spring-context依赖即可导入当前所需所有jar包 -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>5.3.1</version>
+            </dependency>
+            <!-- junit测试 -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.12</version>
+                <scope>test</scope>
+            </dependency>
+            <!-- spring-aspects会帮我们传递过来aspectjweaver -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-aspects</artifactId>
+                <version>5.3.1</version>
+            </dependency>
+        </dependencies>
+
+    ②spring配置文件
+
+        <context:component-scan base-package="com.lxw.spring.annotaion"></context:component-scan>
+        <!--开启基于注解的AOP-->
+        <aop:aspectj-autoproxy />
+
+    ③接口
+
+        public interface Calculator {
+            int add(int i, int j);
+            int sub(int i, int j);
+            int mul(int i, int j);
+            int div(int i, int j);
+        }
+
+    ④被代理类实现接口
+    //需要使用@Component表示为组件
+        @Component
+        public class CalculatorImpl implements Calculator {
+            @Override
+            public int add(int i, int j) {
+                int result = i + j;
+                System.out.println("方法内部，result："+result);
+                return result;
+            }
+
+            @Override
+            public int sub(int i, int j) {
+                int result = i - j;
+                System.out.println("方法内部，result："+result);
+                return result;
+            }
+
+            @Override
+            public int mul(int i, int j) {
+                int result = i * j;
+                System.out.println("方法内部，result："+result);
+                return result;
+            }
+
+            @Override
+            public int div(int i, int j) {
+                int result = i / j;
+                System.out.println("方法内部，result："+result);
+                return result;
+            }
+        }
+
+    ⑤切面一：
+        @Component
+        @Aspect //不仅需要将切面交给IOC容器管理，还需要告诉IOC，该组件是切面，@Aspect将当前组件标识为切面
+        public class LoggerAspect {
+
+            @Pointcut("execution(* com.lxw.spring.annotaion.CalculatorImpl.*(..))")
+            public void pointCut(){}
+
+            //@Before("execution(* com.atguigu.spring.aop.annotation.CalculatorImpl.*(..))")
+            @Before("pointCut()")
+            public void beforeAdviceMethod(JoinPoint joinPoint) {
+                //获取连接点所对应方法的签名信息
+                Signature signature = joinPoint.getSignature();
+                //获取连接点所对应方法的参数
+                Object[] args = joinPoint.getArgs();
+                System.out.println("LoggerAspect，方法："+signature.getName()+"，参数："+ Arrays.toString(args));
+            }
+
+            @After("pointCut()")
+            public void afterAdviceMethod(JoinPoint joinPoint){
+                //获取连接点所对应方法的签名信息
+                Signature signature = joinPoint.getSignature();
+                System.out.println("LoggerAspect，方法："+signature.getName()+"，执行完毕");
+            }
+
+            /**
+             * 在返回通知中若要获取目标对象方法的返回值
+             * 只需要通过@AfterReturning注解的returning属性
+             * 就可以将通知方法的某个参数指定为接收目标对象方法的返回值的参数
+             */
+            @AfterReturning(value = "pointCut()", returning = "result")
+            public void afterReturningAdviceMethod(JoinPoint joinPoint, Object result){
+                //获取连接点所对应方法的签名信息
+                Signature signature = joinPoint.getSignature();
+                System.out.println("LoggerAspect，方法："+signature.getName()+"，结果："+result);
+            }
+
+            /**
+             * 在异常通知中若要获取目标对象方法的异常
+             * 只需要通过AfterThrowing注解的throwing属性
+             * 就可以将通知方法的某个参数指定为接收目标对象方法出现的异常的参数
+             */
+            @AfterThrowing(value = "pointCut()", throwing = "ex")
+            public void afterThrowingAdviceMethod(JoinPoint joinPoint, Throwable ex){
+                //获取连接点所对应方法的签名信息
+                Signature signature = joinPoint.getSignature();
+                System.out.println("LoggerAspect，方法："+signature.getName()+"，异常："+ex);
+            }
+
+            @Around("pointCut()")
+            //环绕通知的方法的返回值一定要和目标对象方法的返回值一致
+            public Object aroundAdviceMethod(ProceedingJoinPoint joinPoint){
+                Object result = null;
+                try {
+                    System.out.println("环绕通知-->前置通知");
+                    //表示目标对象方法的执行
+                    result = joinPoint.proceed();
+                    System.out.println("环绕通知-->返回通知");
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                    System.out.println("环绕通知-->异常通知");
+                } finally {
+                    System.out.println("环绕通知-->后置通知");
+                }
+                return result;
+            }
+
+        }
+
+    ⑥切面二：
+        @Component
+        @Aspect
+        @Order(1)
+        public class ValidateAspect {
+
+            //@Before("execution(* com.lxw.spring.annotaion.CalculatorImpl.*(..))")
+            @Before("com.lxw.spring.annotaion.LoggerAspect.pointCut()")
+            public void beforeMethod(){
+                System.out.println("ValidateAspect-->前置通知");
+            }
+
+        }
+
+    ⑦测试类：
+            @Test
+            public void testAOPByAnnotation(){
+                ApplicationContext ioc = new ClassPathXmlApplicationContext("spring_aop_annotation.xml");
+                //无法从IOC中获取被代理类，只能通过被代理类实现的接口类型，获取代理类对象
+                Calculator calculator = ioc.getBean(Calculator.class);
+                calculator.div(10, 1);
+            }
+
+    ⑧执行结果：
+        ValidateAspect-->前置通知
+        环绕通知-->前置通知
+        LoggerAspect，方法：div，参数：[10, 1]
+        方法内部，result：10
+        LoggerAspect，方法：div，结果：10
+        LoggerAspect，方法：div，执行完毕
+        环绕通知-->返回通知
+        环绕通知-->后置通知
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

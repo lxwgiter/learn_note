@@ -1,0 +1,35 @@
+1、spring的某特性是整合了Junit，不用再每次执行测试时都要读取Spring配置文件、获取IOC容器了
+2、相关注解：
+    @RunWith
+    @ContextConfiguration
+    @Autowired
+    @Test
+3、@RunWith注解
+    书写位置：类名之上
+    value：SpringJUnit4ClassRunner.class
+    作用：指定当前测试类在Spring的测试环境中执行，此时就可以通过注入的方式直接获取IOC容器中bean
+
+4、@ContextConfiguration注解
+    书写位置：类名之上
+    value:"classpath:Spring配置文件"
+    作用：设置Spring测试环境的配置文件
+5、@Autowired注解：
+    书写位置：需要被装配的属性上方
+    作用：自动从IOC容器中找到匹配的依赖，进行注入
+6、@Test注解：
+    在此类中可以使用
+
+7、演示：
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @ContextConfiguration("classpath:spring-jdbc.xml")
+    public class JdbcTemplateTest {
+        //通过spring整合Junit，属性即可从IOC容器中进行依赖注入
+        @Autowired
+        private JdbcTemplate jdbcTemplate;
+
+        @Test
+        public void testInsert(){
+            String sql = "insert into t_user values(null,?,?,?,?,?)";
+            jdbcTemplate.update(sql, "root", "123", 23, "女", "123@qq.com");
+        }
+    }

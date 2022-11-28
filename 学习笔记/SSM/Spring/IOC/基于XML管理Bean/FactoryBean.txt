@@ -1,0 +1,46 @@
+简介
+    FactoryBean是Spring提供的一种整合第三方框架的常用机制。和普通的bean不同，配置一个
+    FactoryBean类型的bean，在获取bean的时候得到的并不是class属性中配置的这个类的对象，而是
+    getObject()方法的返回值。通过这种机制，Spring可以帮我们把复杂组件创建的详细过程和繁琐细节都
+    屏蔽起来，只把最简洁的使用界面展示给我们。
+    将来我们整合Mybatis时，Spring就是通过FactoryBean机制来帮我们创建SqlSessionFactory对象的。
+
+FactoryBean：
+    FactoryBean是一个接口，需要创建一个类实现该接口。
+    其中有三个方法：
+        getObject()：通过一个对象交给IOC容器管理。
+        getObjectType()：设置所提供对象的类型。
+        isSingleton()：所提供的对象是否单例。
+        当把FactoryBean的实现类配置为bean时，会将当前类中getObject()所返回的对象交给IOC容器管理
+
+实现步骤：
+    ①创建类XXXFactoryBean
+        public class XXXFactoryBean implements FactoryBean<User> {
+            @Override
+            public User getObject() throws Exception {
+                return new User();
+            }
+
+            @Override
+            public Class<?> getObjectType() {
+                return User.class;
+            }
+        }
+    ②配置bean
+        <bean id="xxx" class="com.lxw.bean.XXXFactoryBean"></bean>
+
+    ③测试：
+        @Test
+        public void testUserFactoryBean(){
+            //获取IOC容器
+            ApplicationContext ac = new ClassPathXmlApplicationContext("spring-factorybean.xml");
+            XXX xxx = (XXX) ac.getBean("xxx");
+            System.out.println(user);
+        }
+
+    注：通过这种方式获取的bean不是工厂，而是工厂的getObject()方法返回的对象
+
+
+
+
+

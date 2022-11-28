@@ -25,6 +25,7 @@
                 <servlet-mapping>
                     <servlet-name>类的别名</servlet-name>
                     <url-pattern>/访问地址</url-pattern>
+				 <url-pattern>可以设置多个，只要有一个匹配的就行
                 </servlet-mapping>
             </web-app>
         方式一：实现Servlet接口的方式-----》不用这种方式
