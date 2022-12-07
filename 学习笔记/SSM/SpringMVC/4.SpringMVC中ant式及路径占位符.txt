@@ -1,0 +1,26 @@
+1、SpringMVC支持ant风格的路径
+    ？：表示任意的单个字符
+    *：表示任意的0个或多个字符
+    **：表示任意层数的任意目录
+        注意：在使用**时，只能使用/**/xxx的方式
+2、SpringMVC支持路径中的占位符（重点）
+    原始方式：/deleteUser?id=1
+    rest方式：/user/delete/1
+    注：
+        SpringMVC路径中的占位符常用于RESTful风格中，当请求路径中将某些数据通过路径的方式传输到服
+        务器中，就可以在相应的@RequestMapping注解的value属性中通过占位符{xxx}表示传输的数据，在
+        通过@PathVariable注解，将占位符所表示的数据赋值给控制器方法的形参
+3、ant式风格演示
+    ①/hello/abb能被/hello/a?b匹配到
+    ②/hello/aabb能被/hello/a*b匹配到
+    ③/hello/a/a/b/b能被/hello/**/b匹配到
+
+4、路径占位符演示：
+    ①请求：
+        <a th:href="@{/test/rest/admin/1}">测试@RequestMapping注解的value属性中的占位符</a><br>
+    ②控制器方法：
+        @RequestMapping("/test/rest/{username}/{id}")
+        public String testRest(@PathVariable("id") Integer id, @PathVariable("username") String username){
+            System.out.println("id:"+id+",username:"+username);
+            return "success";
+        }

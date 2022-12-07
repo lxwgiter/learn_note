@@ -1,0 +1,224 @@
+1、实现步骤：
+    ①导入依赖
+    ②配置web.xml(配置前端控制器)
+    ③配置spring配置文件(开启注解扫描和springMVC功能)
+    ④在组件中配置@RequestMapping注解，设置请求地址
+    ⑤配置TomCat
+
+2、什么是前端控制器？
+    前端控制器是SpringMVC为我们提供的Servlet实现类：org.springframework.web.servlet.DispatcherServlet
+    这个类封装了servlet的功能，需要我们手动地配置进web.xml中
+
+3、前端控制器的作用
+    帮助我们处理请求和响应的共性问题，比如：
+    获取请求参数、向域对象中共享数据、页面的转发和 重定向。
+    具体的处理请求的方法还是需要请求控制器来处理，也就意味着我们不需要在web.xml中配置很多个Servlet，
+    只需要在web.xml中配置一个前端控制器，至于具体处理请求的方法，在控制器方法中书写。
+
+3、什么是请求控制器？
+    由于前端控制器对浏览器发送的请求进行了统一的处理，但是具体的请求有不同的处理过程，因此需要创建处理具体请求的类，即请求控制器
+    请求控制器中每一个处理请求的方法成为控制器方法
+    因为SpringMVC的控制器由一个POJO（普通的Java类）担任，因此需要通过@Controller注解将其标识
+    为一个控制层组件，交给Spring的IoC容器管理，此时SpringMVC才能够识别控制器的存在
+
+5、前端控制器的配置的注意点
+    ①url-pattern
+        该标签可以像servlet、filter一样书写多个请求地址，同时我们一般配置为"/"即可
+        url-pattern中/和/*的区别：
+               /：匹配浏览器向服务器发送的所有请求（不包括.jsp）
+               /*：匹配浏览器向服务器发送的所有请求（包括.jsp）
+               url-pattern标签中可以向Filter中一样，不单匹配某一个资源路径，还可以通过正则匹配多个路径
+               为什么不能写“/*”？
+                   因为这种写法会拦截到.jsp请求，这种请求只能交给Tomcat中配置的
+                   JspServlet处理(翻译成servlet，回传给html页面)，前端控制器无法处理这种请求
+
+    ②在前端控制器中设置spring配置文件的路径
+         SpringMVC的配置文件默认的位置和名称：
+             位置：WEB-INF下
+             名称：<servlet-name>-servlet.xml，当前配置下的配置文件名为SpringMVC-servlet.xml
+             注：由于Spring-Mvc配置文件是由DispatcherServlet类自动加载，所以如果不通过参数指定配置文件的位置，则必须放在该位置下
+             但是我们习惯上把配置文件都放到resources目录下，我们可以通过<init-param>标签指定配置文件的位置
+         格式：
+         <servlet>
+                 <servlet-name>SpringMVC</servlet-name>
+                 <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+                 <!--设置SpringMVC配置文件的位置和名称-->
+                 <init-param>
+                   <param-name>contextConfigLocation</param-name>
+                   <param-value>classpath:springmvc.xml</param-value>
+                 </init-param>
+                 <load-on-startup>1</load-on-startup>
+               </servlet>
+
+    ③前端控制器加载的时机：
+         作为框架的核心组件，在启动过程中有大量的初始化操作要做
+         而这些操作放在第一次请求时才执行会严重影响访问速度
+         因此需要通过此标签将启动控制DispatcherServlet的初始化时间提前到服务器启动时
+         书写：<load-on-startup>1</load-on-startup>
+
+
+6、SpringMvc工作流程：
+    浏览器发送请求，若请求地址符合前端控制器的url-pattern，该请求就会被前端控制器DispatcherServlet处理。
+    前端控制器会读取SpringMVC的核心配置文件，通过扫描组件找到控制器，将请求地址和控制器中@RequestMapping注解的value属性值进行匹配，
+    若匹配成功，该注解所标识的控制器方法就是处理请求的方法。处理请求的方法需要返回一个字符串类型的视图名称，该视图名称会
+    被视图解析器解析，加上前缀和后缀组成视图的路径，通过Thymeleaf对视图进行渲染，最终转发到视图所对应页面
+
+7、一个简单的SpringMVC程序的实现：
+    ①导入Maven依赖：
+        <dependencies>
+            <!-- SpringMVC -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-webmvc</artifactId>
+                <version>5.3.1</version>
+            </dependency>
+
+            <!-- 日志 -->
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>1.2.3</version>
+            </dependency>
+
+            <!-- ServletAPI -->
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>javax.servlet-api</artifactId>
+                <version>3.1.0</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- Spring5和Thymeleaf整合包 -->
+            <dependency>
+                <groupId>org.thymeleaf</groupId>
+                <artifactId>thymeleaf-spring5</artifactId>
+                <version>3.0.12.RELEASE</version>
+            </dependency>
+
+            <!-- junit测试 -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+            </dependency>
+        </dependencies>
+
+    ②准备前端资源：
+        index.html:
+            <!DOCTYPE html>
+            <!--Thymeleaf约束-->
+            <html lang="en" xmlns:th="http://www.thymeleaf.org">
+            <head>
+                <meta charset="UTF-8">
+                <title>首页</title>
+            </head>
+            <body>
+            <h1>index.html</h1>
+            <!--对于以“/”开头的路径，表示绝对路径：
+                ①在服务器端：含有上下文路径即localhost：8080/工程名/
+                ②在浏览器端：不含有上下文路径，即：localhost：8080/
+                “th：”：Thymeleaf约束，经Thymeleaf解析后，/会以服务器方式解析
+            -->
+            <a th:href="@{/hello}">测试SpringMVC</a>
+            </body>
+            </html>
+
+        success.html:
+            <!DOCTYPE html>
+            <html lang="en" xmlns:th="http://www.thymeleaf.org">
+            <head>
+                <meta charset="UTF-8">
+                <title>成功</title>
+            </head>
+            <body>
+            <h1>success.html</h1>
+            </body>
+            </html>
+
+
+
+
+    ③配置web.xml
+              <servlet>
+                <servlet-name>SpringMVC</servlet-name>
+                <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+                <!--设置SpringMVC配置文件的位置和名称-->
+                <init-param>
+                  <param-name>contextConfigLocation</param-name>
+                  <param-value>classpath:springmvc.xml</param-value>
+                </init-param>
+                <!--提前前端控制器的初始化时阿健-->
+                <load-on-startup>1</load-on-startup>
+              </servlet>
+              <servlet-mapping>
+                <servlet-name>SpringMVC</servlet-name>
+                <url-pattern>/</url-pattern>
+              </servlet-mapping>
+    ④配置spring配置文件：
+        <?xml version="1.0" encoding="UTF-8"?>
+        <beans xmlns="http://www.springframework.org/schema/beans"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns:context="http://www.springframework.org/schema/context"
+               xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+
+            <!--扫描控制层组件-->
+            <context:component-scan base-package="com.lxw.controller"></context:component-scan>
+
+            <!-- 配置Thymeleaf视图解析器 -->
+            <!--在springmvc中只需配置Thymeleaf组件即可，无需手动引入，这体现了springmvc的内部组件化程度高，可插拔式组件即插即用-->
+            <!--在Thymeleaf中，完整资源路径=视图前缀+逻辑视图+视图后缀，视图前缀和视图后缀我们在这里已经配置好，只需给出逻辑视图即可自动跳转-->
+            <bean id="viewResolver" class="org.thymeleaf.spring5.view.ThymeleafViewResolver">
+                <property name="order" value="1"/>
+                <property name="characterEncoding" value="UTF-8"/>
+                <property name="templateEngine">
+                    <bean class="org.thymeleaf.spring5.SpringTemplateEngine">
+                        <property name="templateResolver">
+                            <bean class="org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver">
+                                <!-- 视图前缀 -->
+                                <property name="prefix" value="/WEB-INF/templates/"/>
+                                <!-- 视图后缀 -->
+                                <property name="suffix" value=".html"/>
+                                <property name="templateMode" value="HTML5"/>
+                                <property name="characterEncoding" value="UTF-8" />
+                            </bean>
+                        </property>
+                    </bean>
+                </property>
+            </bean>
+
+        </beans>
+
+    ⑤创建请求控制器：
+        @Controller
+        public class HelloController {
+            //@RequestMapping注解，标识在普通的pojo对象即可，被标识的方法将会作为处理请求的方法，处理的请求即为value中的地址
+            //通过springmvc的注解的方式，我们无需再手动实现servlet，而是直接配置前端控制器，将方法标识为处理请求的方法即可
+
+            @RequestMapping("/")
+            public String protal(){
+                //将逻辑视图返回，即可实现页面跳转
+                return "index";
+            }
+
+            @RequestMapping("/hello")
+            public String hello(){
+                return "success";
+            }
+
+        }
+
+    ⑥放到TomCat上即可运行
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
